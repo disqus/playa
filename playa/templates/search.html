@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <form method="GET" action="/search">
+        <input type="text" name="q" value="{{ query or '' }}"/> <input type="submit" value="Search"/>
+    </form>
+    
+    <h2>Results</h2>
+    {% if results %}
+        <ol>
+            {% for filename, metadata in results %}
+                <li><form method="POST" action="/play/filename">
+                    <input type="hidden" name="filename" value="{{ filename }}"/>
+                    {{ metadata.artist }} - {{ metadata.title }} <input type="submit" value="Queue"/>
+                </form></li>
+            {% endfor %}
+        </ol>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+<DOCTYPE html>
+<html>
+    <head>
+        <title>
+            {% if current_track %}
+            {{ current_track.artist }} - {{ current_track.title }} |
+            {% endif %}
+            Playa
+        </title>
+        <meta http-equiv="refresh" content="1">
+        <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='playa.css') }}"/>
+    </head>
+    <body>
+        <div id="container">
+            {% if not player.is_ready() %}
+                <p>Please wait while Playa loads...</p>
+            {% else %}
+                {% if current_track %}
+                    <div id="now-playing">
+                        <div class="song-name">{{ current_track.artist }} - {{ current_track.title }}</div>
+                        <div class="song-pos">-{{ (player.get_song_pos()[1] - player.get_song_pos()[0])|duration }}</div>
+                        <div class="song-album">{{ current_track.album }}</div>
+                        <div class="progress-bar">
+                            <div style="width: {{ player.get_song_pos()[0] / player.get_song_pos()[1] * 100 }}%"></div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% block body %}{% endblock %}
+            {% endif %}
+        </div>
+    </body>
+</html>

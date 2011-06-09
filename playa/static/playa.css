@@ -1,0 +1,114 @@
+/* http://www.positioniseverything.net/easyclearing.html */
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+.clearfix {display: inline-block;}
+/* Hides from IE-mac \*/
+.clearfix {display: block;}
+* html .clearfix {height: 1%;}
+/* end hide from IE-mac */
+
+html * { padding:0; margin:0; }
+body * * { padding:0; }
+body {
+    font: small "Lucida Grande", "Lucida Sans", verdana, sans-serif;
+    background: #E5E5E5;
+}
+h1 a { color: inherit; text-decoration: none; }
+h2 span { font-size:80%; color:#666; font-weight:normal; }
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: normal;
+}
+
+h1, h2, h3, h4, h5, h6, p, ul,
+table, form, pre, ol { margin-bottom: 20px; }
+ol, ul { margin: 0 0 20px 20px; }
+
+a { color: #333; }
+a:visited { color: inherit; }
+
+pre {
+    display: block;
+    white-space: pre-wrap;       /* CSS-3                  */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999    */
+    white-space: -pre-wrap;      /* Opera 4-6              */
+    white-space: -o-pre-wrap;    /* Opera 7                */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+img {
+    max-width: 100%;
+}
+
+h1, h2, h3 {
+    color: #ff7824;
+}
+
+#container {
+    margin: 10px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+}
+
+.progress-bar {
+    height: 1.4em;
+    margin-bottom: 5px;
+    background-color: #fff;
+    position: relative;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+}
+
+.progress-bar div {
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    height: 1.4em;
+    background-color: #5A7C9D;
+}
+
+.progress-bar strong {
+    height: 1.4em;
+    display: block;
+    vertical-align: middle;
+    line-height: 1.8em;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    color: #ff7824;
+    font-size: 10px;
+    text-align: center;
+}
+
+#now-playing {
+    position: relative;
+    max-width: 500px;
+    margin-bottom: 10px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    background: #ff7824;
+    color: #fff;
+    padding: 10px;
+    margin-bottom: 30px;
+}
+#now-playing .song-name {
+    margin-bottom: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    font-weight: bold;
+    font-size: 16px;
+}
+#now-playing .song-album {
+    margin-bottom: 15px;
+}
+#now-playing .song-pos {
+    float: right;
+}

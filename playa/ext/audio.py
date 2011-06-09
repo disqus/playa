@@ -1,0 +1,264 @@
+from __future__ import absolute_import
+
+import mad
+import os
+import pyaudio
+import random
+import threading
+import time
+import wave
+from mutagen.mp3 import MP3
+from mutagen.easyid3 import EasyID3
+
+class AudioThread(threading.Thread):
+    def __init__(self, app):
+        self.app = app
+        self.stopped = True
+        self.skipped = False
+        self.current_track = None
+        self.queue = []
+        
+        self.search_index = None
+        self.audio_index = None
+        self.metadata_index = {}
+        
+        self.pos_current = 0
+        self.pos_end = 0
+        
+        self.is_ready = False
+
+        super(AudioThread, self).__init__()
+        
+    def run(self):
+        self.build_index(self.app.config['AUDIO_ROOT'])
+        
+        self.is_ready = True
+        
+        while True:
+            if self.stopped:
+                time.sleep(0.1)
+                continue
+            
+            if not self.queue:
+                filename = self.audio_index[random.randint(0, len(self.audio_index))]
+            else:
+                filename = self.queue.pop(0)
+
+            self.play_song(filename)
+
+    def play_song(self, filename):
+        self.skipped = False
+        self.pos_current = 0
+
+        p = pyaudio.PyAudio()
+        metadata = self.metadata_index[filename]
+
+        # for channel in bot.config.channels:
+        #     bot.msg(channel, 'Now playing: %s - %s' % (metadata.get('artist'), metadata.get('title')))
+
+        self.current_track = filename
+        self.pos_end = metadata['length']
+        
+        if filename.endswith('.wav'):
+            af = wave.open(filename, 'rb')
+            rate = af.getframerate()
+            channels = af.getnchannels()
+            format = p.get_format_from_width(af.getsampwidth())
+            audio = 'wav'
+        else:
+            af = mad.MadFile(filename)
+            rate = af.samplerate()
+            channels = 2
+            format = p.get_format_from_width(pyaudio.paInt32)
+            audio = 'mp3'
+
+        # open stream
+        stream = p.open(format = format,
+                        channels = channels,
+                        rate = rate,
+                        output = True)
+
+        if audio == 'wav':
+            chunk = 1024
+            while self.is_playing():
+                data = af.readframes(chunk)
+                if not data:
+                    self.skipped = True
+                    continue
+                stream.write(data)
+                self.pos_current = stream.get_time()
+        elif audio == 'mp3':
+            while self.is_playing():
+                data = af.read()
+                if not data:
+                    self.skipped = True
+                    continue
+                stream.write(data)
+                self.pos_current = stream.get_time()
+            
+        stream.close()
+        p.terminate()
+    
+    def is_playing(self):
+        return not (self.stopped or self.skipped)
+
+    def build_index(self, root):
+        self.search_index = {}
+        self.audio_index = []
+    
+        start = time.time()
+
+        print "Building audio index"
+    
+        def append_files(path):
+            for fn in os.listdir(path): 
+                if fn.startswith('.'):
+                    continue
+                full_path = os.path.join(path, fn)
+                if os.path.isdir(full_path):
+                    append_files(full_path)
+                elif fn.endswith('.mp3'):
+                    metadata = EasyID3(full_path)
+                    audio = MP3(full_path)
+
+                    self.metadata_index[full_path] = {}
+                    self.metadata_index[full_path]['length'] = audio.info.length
+
+                    tokens = []
+                    for key in ('artist', 'title', 'album'):
+                        try:
+                            self.metadata_index[full_path][key] = unicode(metadata[key][0])
+                            tokens.extend(map(lambda x: x.lower(), filter(None, metadata[key][0].split(' '))))
+                        except KeyError, e:
+                            continue
+
+                    self.audio_index.append(full_path)
+
+                    for token in tokens:
+                        if token not in self.search_index:
+                            self.search_index[token] = {}
+                        if full_path not in self.search_index[token]:
+                            self.search_index[token][full_path] = 1
+                        else:
+                            self.search_index[token][full_path] += 1
+
+        append_files(root)
+
+        print "Done! (%d entries, took %.2fs)" % (len(self.search_index), time.time() - start)
+
+class AudioPlayer(object):
+    def __init__(self, app=None):
+        if app is not None:
+            self.init_app(app)
+        else:
+            self.app = None
+            self.thread = None
+
+    def init_app(self, app):
+        self.app = app
+        self.thread = AudioThread(app)
+        self.thread.start()
+        # self.app.after_request(self.after_request)
+        # self.app.before_request(self.before_request)
+
+    def is_ready(self):
+        return self.thread.is_ready
+
+    def get_song_pos(self):
+        return (self.thread.pos_current, self.thread.pos_end)
+
+    def get_current_track(self):
+        if not self.is_ready():
+            return
+
+        song = self.thread.current_track
+        if not song:
+            return
+
+        return self.thread.metadata_index[song]
+
+    def play_random(self):
+        if not self.is_ready():
+            return
+        
+        name = self.thread.audio_index[random.randint(0, len(self.thread.audio_index))]
+
+        return self.play_filename(name)
+
+    def play_next(self):
+        if not self.is_ready():
+            return
+
+        self.thread.skipped = True
+        self.thread.stopped = False
+
+    def stop_playing(self):
+        if not self.is_ready():
+            return
+
+        self.thread.stopped = True
+        self.thread.skipped = False
+
+    def clear_playlist(self):
+        if not self.is_ready():
+            return
+
+        self.thread.queue = []
+
+    def list_upcoming(self):
+        if not self.is_ready():
+            return
+
+        for song in self.thread.queue:
+            metadata = self.thread.metadata_index[song]
+
+            yield '%s - %s' % (metadata.get('artist'), metadata.get('title'))
+
+    def find_song(self, query):
+        if not self.is_ready():
+            return
+
+        results = {}
+    
+        tokens = query.lower().split(' ')
+        for token in tokens:
+            if token not in self.thread.search_index:
+                continue
+            for full_path, count in self.thread.search_index[token].iteritems():
+                if full_path not in results:
+                    results[full_path] = count
+                else:
+                    results[full_path] += count
+        
+        if not results:
+            return None
+
+        return sorted(results.items(), key=lambda x: -x[1])[:50]
+    
+    def get_metadata(self, filename):
+        return self.thread.metadata_index[filename]
+    
+    def play_filename(self, filename):
+        if not self.is_ready():
+            return
+
+        if not os.path.exists(filename):
+            raise ValueError
+
+        self.thread.stopped = False
+        self.thread.skipped = False
+        self.thread.queue.append(filename)
+
+    def play(self):
+        if not self.is_ready():
+            return
+
+        self.thread.stopped = False
+        self.thread.skipped = False
+    
+    def pause(self):
+        if not self.is_ready():
+            return
+
+        self.thread.stopped = True
+        self.thread.skipped = False
