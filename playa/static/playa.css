@@ -50,30 +50,33 @@ h1, h2, h3 {
 }
 
 #container {
+    position: relative;
     margin: 10px;
     -moz-border-radius: 8px;
     border-radius: 8px;
-    padding: 10px;
+    padding: 20px 20px 0;
     background: #fff;
 }
 
 .progress-bar {
     height: 1.4em;
-    margin-bottom: 5px;
     background-color: #fff;
     position: relative;
     -moz-border-radius: 8px;
     border-radius: 8px;
+    border: 1px solid #fff;
 }
 
 .progress-bar div {
     -moz-border-radius: 8px;
     border-radius: 8px;
     height: 1.4em;
-    background-color: #5A7C9D;
+    background-color: #ff7824;
 }
 
 .progress-bar strong {
+    -moz-border-radius: 8px;
+    border-radius: 8px;
     height: 1.4em;
     display: block;
     vertical-align: middle;
@@ -99,16 +102,60 @@ h1, h2, h3 {
     padding: 10px;
     margin-bottom: 30px;
 }
+#now-playing .progress-bar {
+    margin-left: 20px;
+}
+#now-playing .song-action {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 4px 0;
+    text-align: center;
+}
+#now-playing .song-action a {
+    margin: auto;
+    display: block;
+}
+#now-playing .song-action .play-button {
+    border-color: transparent transparent transparent #fff;
+    border-style: solid;
+    border-width: 8px 0 8px 12px;
+    text-indent: -9999px;
+    height: 0;
+    width: 0;
+}
+#now-playing .song-action .play-button:hover {
+    border-color: transparent transparent transparent #5A7C9D;
+}
+#now-playing .song-action .pause-button {
+    border-color:transparent #fff;
+    border-style:solid;
+    border-width:0 4px 0;
+    height:13px;
+    text-indent:-9999px;
+    width:4px;
+}
+#now-playing .song-action .pause-button:hover {
+    border-color: transparent #5A7C9D;
+}
+
 #now-playing .song-name {
     margin-bottom: 5px;
     overflow: hidden;
     white-space: nowrap;
     font-weight: bold;
     font-size: 16px;
+    height: 20px;
 }
 #now-playing .song-album {
     margin-bottom: 15px;
+    height: 18px;
 }
 #now-playing .song-pos {
     float: right;
+    height: 18px;
+}
+
+li.active {
+    font-weight: bold;
 }

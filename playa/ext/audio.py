@@ -16,7 +16,9 @@ class AudioThread(threading.Thread):
         self.stopped = True
         self.skipped = False
         self.current_track = None
-        self.queue = []
+
+        self.queue_pos = 0
+        self.playlist = []
         
         self.search_index = None
         self.audio_index = None
@@ -35,16 +37,20 @@ class AudioThread(threading.Thread):
         self.is_ready = True
         
         while True:
-            if self.stopped:
-                time.sleep(0.1)
-                continue
+            time.sleep(0.1)
             
-            if not self.queue:
-                filename = self.audio_index[random.randint(0, len(self.audio_index))]
-            else:
-                filename = self.queue.pop(0)
+            if self.stopped:
+                continue
 
-            self.play_song(filename)
+            if self.queue_pos >= len(self.playlist):
+                self.queue_pos = 0
+            
+            if not self.playlist:
+                continue
+
+            self.play_song(self.playlist[self.queue_pos])
+            
+            self.queue_pos += 1
 
     def play_song(self, filename):
         self.skipped = False
@@ -164,6 +170,16 @@ class AudioPlayer(object):
     def is_ready(self):
         return self.thread.is_ready
 
+    def is_playing(self):
+        return self.thread.current_track and not self.thread.stopped
+    
+    def is_stopped(self):
+        return self.thread.stopped
+
+    def shuffle_all(self):
+        self.thread.playlist = self.thread.audio_index
+        random.shuffle(self.thread.playlist)
+
     def get_song_pos(self):
         return (self.thread.pos_current, self.thread.pos_end)
 
@@ -186,9 +202,6 @@ class AudioPlayer(object):
         return self.play_filename(name)
 
     def play_next(self):
-        if not self.is_ready():
-            return
-
         self.thread.skipped = True
         self.thread.stopped = False
 
@@ -199,20 +212,38 @@ class AudioPlayer(object):
         self.thread.stopped = True
         self.thread.skipped = False
 
+    def start_playing(self):
+        if not self.is_ready():
+            return
+
+        self.thread.stopped = False
+        self.thread.skipped = False
+
+        if not self.thread.playlist:
+            self.thread.playlist = list(self.thread.audio_index)
+            random.shuffle(self.thread.playlist)
+
     def clear_playlist(self):
-        if not self.is_ready():
-            return
+        self.thread.playlist = []
 
-        self.thread.queue = []
+    def playlist_index(self):
+        return self.thread.queue_pos
 
-    def list_upcoming(self):
-        if not self.is_ready():
-            return
+    def has_playlist(self):
+        return bool(self.thread.playlist)
 
-        for song in self.thread.queue:
+    def list_playlist(self, with_playing=False, limit=None):
+        for num, song in enumerate(self.thread.playlist):
             metadata = self.thread.metadata_index[song]
-
-            yield '%s - %s' % (metadata.get('artist'), metadata.get('title'))
+            
+            if limit and num >= limit:
+                break
+            
+            name = '%s - %s' % (metadata.get('artist'), metadata.get('title'))
+            if with_playing:
+                yield name, num == self.playlist_index()
+            else:
+                yield name
 
     def find_song(self, query):
         if not self.is_ready():
@@ -247,7 +278,7 @@ class AudioPlayer(object):
 
         self.thread.stopped = False
         self.thread.skipped = False
-        self.thread.queue.append(filename)
+        self.thread.playlist.append(filename)
 
     def play(self):
         if not self.is_ready():

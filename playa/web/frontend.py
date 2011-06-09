@@ -2,31 +2,42 @@ from playa import app
 
 from flask import render_template, redirect, request
 
+@app.before_request
+def check_state():
+    if not app.player.is_ready():
+        return render_template('loading.html')
+
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
-@app.route('/play/random', methods=['POST'])
+@app.route('/play/random', methods=['GET', 'POST'])
 def play_random():
     app.player.play_random()
     
     return redirect('/')
 
-@app.route('/play/filename', methods=['POST'])
+@app.route('/play/filename', methods=['GET', 'POST'])
 def play_filename():
     if 'filename' in request.form:
         app.player.play_filename(request.form['filename'])
     
     return redirect('/')
 
-@app.route('/play/next', methods=['POST'])
+@app.route('/play/next', methods=['GET', 'POST'])
 def next_track():
     app.player.play_next()
     
     return redirect('/')
 
-@app.route('/stop', methods=['POST'])
-def next_track():
+@app.route('/play', methods=['GET', 'POST'])
+def start_playing():
+    app.player.start_playing()
+    
+    return redirect('/')
+
+@app.route('/stop', methods=['GET', 'POST'])
+def stop_playing():
     app.player.stop_playing()
     
     return redirect('/')

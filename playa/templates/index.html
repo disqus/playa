@@ -15,11 +15,12 @@
         <input type="text" name="q" value="{{ query or '' }}"/> <input type="submit" value="Search"/>
     </form>
     
-    <h2>Upcoming</h2>
-    <ol>
-        {% for song in player.list_upcoming() %}
-            <li>{{ song }}</li>
-        {% endfor %}
-        <li><em>(Random track)</em></li>
-    </ol>
+    {% if player.has_playlist() %}
+        <h2>Upcoming</h2>
+        <ol>
+            {% for song, is_playing in player.list_playlist(with_playing=True, limit=10) %}
+                <li{% if is_playing %} class="active"{% endif %}>{{ song }}</li>
+            {% endfor %}
+        </ol>
+    {% endif %}
 {% endblock %}

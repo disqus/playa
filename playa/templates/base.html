@@ -7,27 +7,41 @@
             {% endif %}
             Playa
         </title>
-        <meta http-equiv="refresh" content="1">
         <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='playa.css') }}"/>
     </head>
     <body>
         <div id="container">
-            {% if not player.is_ready() %}
-                <p>Please wait while Playa loads...</p>
-            {% else %}
-                {% if current_track %}
+            <div class="clearfix">
+                {% if not player.is_ready() %}
+                    <p>Please wait while Playa loads...</p>
+                {% else %}
                     <div id="now-playing">
-                        <div class="song-name">{{ current_track.artist }} - {{ current_track.title }}</div>
-                        <div class="song-pos">-{{ (player.get_song_pos()[1] - player.get_song_pos()[0])|duration }}</div>
-                        <div class="song-album">{{ current_track.album }}</div>
-                        <div class="progress-bar">
-                            <div style="width: {{ player.get_song_pos()[0] / player.get_song_pos()[1] * 100 }}%"></div>
+                        <div class="song-action">
+                            {% if player.is_playing() %}
+                                <a href="{{ url_for('stop_playing') }}" class="pause-button">Pause</a>
+                            {% else %}
+                                <a href="{{ url_for('start_playing') }}" class="play-button">Play</a>
+                            {% endif %}
                         </div>
+                        {% if current_track %}
+                            <div class="song-name">{{ current_track.artist }} - {{ current_track.title }}</div>
+                            <div class="song-pos">-{{ (player.get_song_pos()[1] - player.get_song_pos()[0])|duration }}</div>
+                            <div class="song-album">{{ current_track.album }}</div>
+                            <div class="progress-bar">
+                                <div style="width: {{ player.get_song_pos()[0] / player.get_song_pos()[1] * 100 }}%"></div>
+                            </div>
+                        {% else %}
+                            <div class="song-name"></div>
+                            <div class="song-pos"></div>
+                            <div class="song-album"></div>
+                            <div class="progress-bar">
+                                <div style="width:0"></div>
+                            </div>
+                        {% endif %}
                     </div>
+                    {% block body %}{% endblock %}
                 {% endif %}
-
-                {% block body %}{% endblock %}
-            {% endif %}
+            </div>
         </div>
     </body>
 </html>
