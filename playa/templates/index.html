@@ -4,22 +4,16 @@
     <form method="POST" action="/play/random">
         <input type="submit" value="Queue Random Track"/>
     </form>
-    <form method="POST" action="/play/next">
-        <input type="submit" value="Skip Current Track"/>
-    </form>
-    <form method="POST" action="/stop">
-        <input type="submit" value="Stop Music"/>
-    </form>
-    
+    <a href="{{ url_for('next_track') }}">Next Track</a>
     <form method="GET" action="/search">
         <input type="text" name="q" value="{{ query or '' }}"/> <input type="submit" value="Search"/>
     </form>
     
     {% if player.has_playlist() %}
-        <h2>Upcoming</h2>
-        <ol>
-            {% for song, is_playing in player.list_playlist(with_playing=True, limit=10) %}
-                <li{% if is_playing %} class="active"{% endif %}>{{ song }}</li>
+        <h2>Upcoming (next 10)</h2>
+        <ol class="playlist">
+            {% for num, song, is_playing in player.list_playlist(with_playing=True, limit=10) %}
+                <li{% if is_playing %} class="active"{% endif %}>{{ num }}. {{ song }}</li>
             {% endfor %}
         </ol>
     {% endif %}

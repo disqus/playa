@@ -20,8 +20,8 @@ class AudioThread(threading.Thread):
         self.queue_pos = 0
         self.playlist = []
         
-        self.search_index = None
-        self.audio_index = None
+        self.search_index = {}
+        self.audio_index = []
         self.metadata_index = {}
         
         self.pos_current = 0
@@ -32,7 +32,14 @@ class AudioThread(threading.Thread):
         super(AudioThread, self).__init__()
         
     def run(self):
-        self.build_index(self.app.config['AUDIO_ROOT'])
+        start = time.time()
+
+        print "Building audio index"
+
+        for path in self.app.config['AUDIO_PATHS']:
+            self.index_path(path)
+
+        print "Done! (%d entries, took %.2fs)" % (len(self.search_index), time.time() - start)
         
         self.is_ready = True
         
@@ -108,49 +115,37 @@ class AudioThread(threading.Thread):
     def is_playing(self):
         return not (self.stopped or self.skipped)
 
-    def build_index(self, root):
-        self.search_index = {}
-        self.audio_index = []
-    
-        start = time.time()
+    def index_path(self, path):
+        for fn in os.listdir(path): 
+            if fn.startswith('.'):
+                continue
+            full_path = os.path.join(path, fn)
+            if os.path.isdir(full_path):
+                self.index_path(full_path)
+            elif fn.endswith('.mp3'):
+                metadata = EasyID3(full_path)
+                audio = MP3(full_path)
 
-        print "Building audio index"
-    
-        def append_files(path):
-            for fn in os.listdir(path): 
-                if fn.startswith('.'):
-                    continue
-                full_path = os.path.join(path, fn)
-                if os.path.isdir(full_path):
-                    append_files(full_path)
-                elif fn.endswith('.mp3'):
-                    metadata = EasyID3(full_path)
-                    audio = MP3(full_path)
+                self.metadata_index[full_path] = {}
+                self.metadata_index[full_path]['length'] = audio.info.length
 
-                    self.metadata_index[full_path] = {}
-                    self.metadata_index[full_path]['length'] = audio.info.length
+                tokens = []
+                for key in ('artist', 'title', 'album'):
+                    try:
+                        self.metadata_index[full_path][key] = unicode(metadata[key][0])
+                        tokens.extend(map(lambda x: x.lower(), filter(None, metadata[key][0].split(' '))))
+                    except KeyError, e:
+                        continue
 
-                    tokens = []
-                    for key in ('artist', 'title', 'album'):
-                        try:
-                            self.metadata_index[full_path][key] = unicode(metadata[key][0])
-                            tokens.extend(map(lambda x: x.lower(), filter(None, metadata[key][0].split(' '))))
-                        except KeyError, e:
-                            continue
+                self.audio_index.append(full_path)
 
-                    self.audio_index.append(full_path)
-
-                    for token in tokens:
-                        if token not in self.search_index:
-                            self.search_index[token] = {}
-                        if full_path not in self.search_index[token]:
-                            self.search_index[token][full_path] = 1
-                        else:
-                            self.search_index[token][full_path] += 1
-
-        append_files(root)
-
-        print "Done! (%d entries, took %.2fs)" % (len(self.search_index), time.time() - start)
+                for token in tokens:
+                    if token not in self.search_index:
+                        self.search_index[token] = {}
+                    if full_path not in self.search_index[token]:
+                        self.search_index[token][full_path] = 1
+                    else:
+                        self.search_index[token][full_path] += 1
 
 class AudioPlayer(object):
     def __init__(self, app=None):
@@ -233,17 +228,21 @@ class AudioPlayer(object):
         return bool(self.thread.playlist)
 
     def list_playlist(self, with_playing=False, limit=None):
-        for num, song in enumerate(self.thread.playlist):
-            metadata = self.thread.metadata_index[song]
+        if not limit:
+            start = 0
+            end = None
+        else:
+            start = max(0, min(0, limit - 5))
+            end = start + limit
             
-            if limit and num >= limit:
-                break
+        for num, song in enumerate(self.thread.playlist[start:end]):
+            metadata = self.thread.metadata_index[song]
             
             name = '%s - %s' % (metadata.get('artist'), metadata.get('title'))
             if with_playing:
-                yield name, num == self.playlist_index()
+                yield start + num + 1, name, start + num == self.playlist_index()
             else:
-                yield name
+                yield start + num + 1, name
 
     def find_song(self, query):
         if not self.is_ready():

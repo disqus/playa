@@ -159,3 +159,7 @@ h1, h2, h3 {
 li.active {
     font-weight: bold;
 }
+.playlist {
+    list-style-type: none;
+    margin-left: 0;
+}
