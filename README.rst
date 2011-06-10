@@ -4,7 +4,7 @@ Playa is a Python web service that streams music on whatever machine it's runnin
 
 The current iteration, likely to change a lot:
 
-.. image:: http://cl.ly/0K0N3V0H3C3M3k273z2t/by_default_2011-06-09_at_7.18.58_PM.png
+.. image:: http://f.cl.ly/items/2s3E2I001Q3N0N29260s/by%20default%202011-06-09%20at%207.18.58%20PM.png
 
 Install
 =======
