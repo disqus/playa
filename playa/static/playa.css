@@ -28,6 +28,7 @@ h1, h2, h3, h4, h5, h6 {
 h1, h2, h3, h4, h5, h6, p, ul,
 table, form, pre, ol { margin-bottom: 20px; }
 ol, ul { margin: 0 0 20px 20px; }
+ol { margin-left: 30px; }
 
 a { color: #333; }
 a:visited { color: inherit; }
@@ -160,7 +161,7 @@ li.active {
     font-weight: bold;
 }
 .playlist {
-
+    line-height: 20px;
 }
 table {
     border-collapse: collapse;

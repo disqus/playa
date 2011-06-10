@@ -1,10 +1,7 @@
 {% extends "base.html" %}
 
 {% block body %}
-    <form method="POST" action="/play/random">
-        <input type="submit" value="Queue Random Track"/>
-    </form>
-    <a href="{{ url_for('next_track') }}">Next Track</a>
+    <p><a href="{{ url_for('next_track') }}">Skip Track</a></p>
     <form method="GET" action="/search">
         <input type="text" name="q" value="{{ query or '' }}"/> <input type="submit" value="Search"/>
     </form>

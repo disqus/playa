@@ -4,14 +4,124 @@ import mad
 import os
 import pyaudio
 import random
+import re
 import threading
 import time
 import wave
+from collections import defaultdict
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
 
+class AudioIndex(object):
+    RE_SEARCH_TOKENS = re.compile(r'\b([^\:]+):("[^"]*"|[^\s]*)')
+
+    def __init__(self, filter_keys, text_keys):
+        self.filter_keys = filter_keys
+        self.text_keys = text_keys
+        self.tokenized = defaultdict(lambda:defaultdict(int))
+        self.filters = defaultdict(lambda:defaultdict(list))
+        self.metadata = defaultdict(dict)
+        self.files = []
+
+    def __len__(self):
+        return len(self.files)
+
+    def add_path(self, path):
+        for fn in os.listdir(path): 
+            if fn.startswith('.'):
+                continue
+
+            full_path = os.path.join(path, fn)
+
+            try:
+                unicode(full_path)
+            except:
+                continue
+            
+            if os.path.isdir(full_path):
+                self.add_path(full_path)
+            elif fn.endswith('.mp3'):
+                metadata = EasyID3(full_path)
+                audio = MP3(full_path)
+
+                self.metadata[full_path]['length'] = audio.info.length
+
+                tokens = []
+                for key in ('artist', 'title', 'album', 'genre'):
+                    try:
+                        value = unicode(metadata[key][0])
+                    except (IndexError, KeyError), e:
+                        continue
+
+                    lower_value = value.lower()
+
+                    self.metadata[full_path][key] = value
+
+                    if key in self.text_keys:
+                        tokens.extend(filter(None, lower_value.split(' ')))
+
+                    if key in self.filter_keys:
+                        self.filters[key][lower_value].append(full_path)
+
+                self.files.append(full_path)
+
+                for token in tokens:
+                    self.tokenized[token][full_path] += 1
+                    
+    def search(self, query):
+        text_results = defaultdict(int)
+        filter_results = defaultdict(int)
+
+        tokens = self._get_search_query_tokens(query.lower())
+        text_tokens = tokens.pop('', None)
+
+        for token, value in tokens.iteritems():
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            if value in self.filters[token]:
+                for full_path in self.filters[token][value]:
+                    filter_results[full_path] += 1
+
+        if tokens and not filter_results:
+            return None
+
+        if text_tokens:
+            for token in text_tokens.split(' '):
+                for full_path, count in self.tokenized[token].iteritems():
+                    text_results[full_path] += count
+        
+        if filter_results:
+            # We need to remove any results which didnt match filters
+            results = {}
+            for full_path, count in filter_results.iteritems():
+                if not text_tokens or text_results[full_path]:
+                    results[full_path] = text_results[full_path] + count
+        else:
+            results = text_results
+
+        if not results:
+            return None
+
+        return sorted(results.items(), key=lambda x: -x[1])[:50]
+
+    def _get_search_query_tokens(self, query):
+        """
+        Parses a search query for supported tokens and returns a dictionary.
+
+        e.g., "author:test my message" -> {'author': 'test', '': 'my message'}
+
+        """
+        tokens = defaultdict(str)
+        def _token_repl(matchobj):
+            tokens[matchobj.group(1)] = matchobj.group(2)
+            return ''
+        query = self.RE_SEARCH_TOKENS.sub(_token_repl, query.strip()).strip()
+        if query:
+            tokens[''] = query
+        return tokens
+
 class AudioThread(threading.Thread):
-    def __init__(self, app):
+    def __init__(self, app, index):
         self.app = app
         self.stopped = True
         self.skipped = False
@@ -20,14 +130,12 @@ class AudioThread(threading.Thread):
         self.queue_pos = 0
         self.playlist = []
         
-        self.search_index = {}
-        self.audio_index = []
-        self.metadata_index = {}
-        
         self.pos_current = 0
         self.pos_end = 0
         
         self.is_ready = False
+
+        self.index = index
 
         super(AudioThread, self).__init__()
         
@@ -37,9 +145,9 @@ class AudioThread(threading.Thread):
         print "Building audio index"
 
         for path in self.app.config['AUDIO_PATHS']:
-            self.index_path(path)
+            self.index.add_path(path)
 
-        print "Done! (%d entries, took %.2fs)" % (len(self.search_index), time.time() - start)
+        print "Done! (%d entries, took %.2fs)" % (len(self.index), time.time() - start)
         
         self.is_ready = True
         
@@ -64,7 +172,7 @@ class AudioThread(threading.Thread):
         self.pos_current = 0
 
         p = pyaudio.PyAudio()
-        metadata = self.metadata_index[filename]
+        metadata = self.index.metadata[filename]
 
         # for channel in bot.config.channels:
         #     bot.msg(channel, 'Now playing: %s - %s' % (metadata.get('artist'), metadata.get('title')))
@@ -115,39 +223,10 @@ class AudioThread(threading.Thread):
     def is_playing(self):
         return not (self.stopped or self.skipped)
 
-    def index_path(self, path):
-        for fn in os.listdir(path): 
-            if fn.startswith('.'):
-                continue
-            full_path = os.path.join(path, fn)
-            if os.path.isdir(full_path):
-                self.index_path(full_path)
-            elif fn.endswith('.mp3'):
-                metadata = EasyID3(full_path)
-                audio = MP3(full_path)
-
-                self.metadata_index[full_path] = {}
-                self.metadata_index[full_path]['length'] = audio.info.length
-
-                tokens = []
-                for key in ('artist', 'title', 'album'):
-                    try:
-                        self.metadata_index[full_path][key] = unicode(metadata[key][0])
-                        tokens.extend(map(lambda x: x.lower(), filter(None, metadata[key][0].split(' '))))
-                    except KeyError, e:
-                        continue
-
-                self.audio_index.append(full_path)
-
-                for token in tokens:
-                    if token not in self.search_index:
-                        self.search_index[token] = {}
-                    if full_path not in self.search_index[token]:
-                        self.search_index[token][full_path] = 1
-                    else:
-                        self.search_index[token][full_path] += 1
-
 class AudioPlayer(object):
+    filter_keys = ['title', 'artist', 'genre', 'album']
+    text_keys = ['title', 'artist', 'album']
+    
     def __init__(self, app=None):
         if app is not None:
             self.init_app(app)
@@ -157,10 +236,9 @@ class AudioPlayer(object):
 
     def init_app(self, app):
         self.app = app
-        self.thread = AudioThread(app)
+        self.index = AudioIndex(filter_keys=self.filter_keys, text_keys=self.text_keys)
+        self.thread = AudioThread(app, self.index)
         self.thread.start()
-        # self.app.after_request(self.after_request)
-        # self.app.before_request(self.before_request)
 
     def is_ready(self):
         return self.thread.is_ready
@@ -172,7 +250,7 @@ class AudioPlayer(object):
         return self.thread.stopped
 
     def shuffle_all(self):
-        self.thread.playlist = self.thread.audio_index
+        self.thread.playlist = self.index.files
         random.shuffle(self.thread.playlist)
 
     def get_song_pos(self):
@@ -186,13 +264,13 @@ class AudioPlayer(object):
         if not song:
             return
 
-        return self.thread.metadata_index[song]
+        return self.index.metadata[song]
 
     def play_random(self):
         if not self.is_ready():
             return
         
-        name = self.thread.audio_index[random.randint(0, len(self.thread.audio_index))]
+        name = self.index.files[random.randint(0, len(self.index.files))]
 
         return self.play_filename(name)
 
@@ -215,7 +293,7 @@ class AudioPlayer(object):
         self.thread.skipped = False
 
         if not self.thread.playlist:
-            self.thread.playlist = list(self.thread.audio_index)
+            self.thread.playlist = list(self.index.files)
             random.shuffle(self.thread.playlist)
 
     def clear_playlist(self):
@@ -241,7 +319,7 @@ class AudioPlayer(object):
             end = start + limit
             
         for num, song in enumerate(self.thread.playlist[start:end]):
-            metadata = self.thread.metadata_index[song]
+            metadata = self.index.metadata[song]
             
             name = '%s - %s' % (metadata.get('artist'), metadata.get('title'))
             if with_playing:
@@ -253,25 +331,10 @@ class AudioPlayer(object):
         if not self.is_ready():
             return
 
-        results = {}
-    
-        tokens = query.lower().split(' ')
-        for token in tokens:
-            if token not in self.thread.search_index:
-                continue
-            for full_path, count in self.thread.search_index[token].iteritems():
-                if full_path not in results:
-                    results[full_path] = count
-                else:
-                    results[full_path] += count
-        
-        if not results:
-            return None
-
-        return sorted(results.items(), key=lambda x: -x[1])[:50]
+        return self.index.search(query) or []
     
     def get_metadata(self, filename):
-        return self.thread.metadata_index[filename]
+        return self.index.metadata[filename]
     
     def play_filename(self, filename):
         if not self.is_ready():
