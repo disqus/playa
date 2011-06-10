@@ -53,3 +53,4 @@ TODO
 - Move indexes into SQLite database to avoid rebuilding continuously.
 - Create IndexThread to monitor directories for changes.
 - Refactor AudioPlayer public API to be part of AudioThread.
+- Add dynamic playlists support via SQLite
