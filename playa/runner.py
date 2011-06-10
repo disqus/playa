@@ -96,7 +96,12 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.config:
-        app.config.from_object(options.config)
+        # assumed to be a file
+        app.config.from_file(options.config)
+    else:
+        config_path = os.path.expanduser(os.path.join('~', '.playa', 'playa.conf.py'))
+        if os.path.exists(config_path):
+            app.config.from_file(config_path)
 
     if args[0] == 'upgrade':
         upgrade()
