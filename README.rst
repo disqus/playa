@@ -13,7 +13,7 @@ For now, we're going to assume you're on a UNIX based operating system.
 
 3. Install Playa::
 
-    pip install playa
+    pip install https://github.com/disqus/playa/zipball/master
 
 4. Start the service::
 
