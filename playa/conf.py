@@ -13,7 +13,7 @@ class PlayaConfig(object):
 
     SQLITE3_DATABASE = os.path.join(ROOT, 'playa.db')
 
-    AUDIO_PATHS = ['/Volumes/Storage/Music/iTunes/iTunes Media/Music/']
+    AUDIO_PATHS = ['/Volumes/Storage/Music/iTunes/iTunes Media/Music/Blink-182/']
 
     WEB_HOST = '0.0.0.0'
     WEB_PORT = 9000

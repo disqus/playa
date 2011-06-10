@@ -25,9 +25,15 @@ def play_filename():
     
     return redirect('/')
 
+@app.route('/playlist/clear', methods=['GET', 'POST'])
+def clear_playlist():
+    app.player.clear_playlist()
+    
+    return redirect('/')
+
 @app.route('/play/next', methods=['GET', 'POST'])
 def next_track():
-    app.player.play_next()
+    app.player.skip_song()
     
     return redirect('/')
 

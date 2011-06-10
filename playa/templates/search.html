@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block body %}
-    <form method="GET" action="/search">
-        <input type="text" name="q" value="{{ query or '' }}"/> <input type="submit" value="Search"/>
+    <form method="GET" action="/search" id="search">
+        <input type="text" name="q" value="{{ query or '' }}" placeholder="search music"/>
     </form>
 
     {% if query %}

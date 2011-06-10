@@ -2,8 +2,8 @@
 <html>
     <head>
         <title>
-            {% if current_track %}
-            {{ current_track.artist }} - {{ current_track.title }} |
+            {% if current_song %}
+            {{ current_song.artist }} - {{ current_song.title }} |
             {% endif %}
             Playa
         </title>
@@ -24,10 +24,10 @@
                                 <a href="{{ url_for('start_playing') }}" class="play-button">Play</a>
                             {% endif %}
                         </div>
-                        {% if current_track %}
-                            <div class="song-name">{{ current_track.artist }} - {{ current_track.title }}</div>
+                        {% if current_song %}
+                            <div class="song-name">{{ current_song.artist }} - {{ current_song.title }}</div>
                             <div class="song-pos">-{{ (player.get_song_pos()[1] - player.get_song_pos()[0])|duration }}</div>
-                            <div class="song-album">{{ current_track.album }}</div>
+                            <div class="song-album">{{ current_song.album }}</div>
                             <div class="progress-bar">
                                 <div style="width: {{ player.get_song_pos()[0] / player.get_song_pos()[1] * 100 }}%"></div>
                             </div>

@@ -2,12 +2,12 @@
 
 {% block body %}
     <p><a href="{{ url_for('next_track') }}">Skip Track</a></p>
-    <form method="GET" action="/search">
-        <input type="text" name="q" value="{{ query or '' }}"/> <input type="submit" value="Search"/>
+    <form method="GET" action="/search" id="search">
+        <input type="text" name="q" placeholder="search music"/>
     </form>
     
     {% if player.has_playlist() %}
-        <h2>Upcoming</h2>
+        <h2>Upcoming <a href="{{ url_for('clear_playlist') }}">Clear</a></h2>
         <ol class="playlist" start="{{ player.get_playlist_offset() + 1 }}">
             {% for num, song, is_playing in player.list_playlist(with_playing=True, limit=10) %}
                 <li{% if is_playing %} class="active"{% endif %}>{{ song }}</li>

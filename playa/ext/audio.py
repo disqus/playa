@@ -123,19 +123,21 @@ class AudioIndex(object):
 class AudioThread(threading.Thread):
     def __init__(self, app, index):
         self.app = app
-        self.stopped = True
-        self.skipped = False
-        self.current_track = None
+
+        self.current_song = None
 
         self.queue_pos = 0
         self.playlist = []
         
-        self.pos_current = 0
+        self.pos_cur = 0
         self.pos_end = 0
         
-        self.is_ready = False
 
         self.index = index
+
+        self._skipped = False
+        self._playing = False
+        self._ready = False
 
         super(AudioThread, self).__init__()
         
@@ -149,36 +151,37 @@ class AudioThread(threading.Thread):
 
         print "Done! (%d entries, took %.2fs)" % (len(self.index), time.time() - start)
         
-        self.is_ready = True
+        self._ready = True
         
         while True:
             time.sleep(0.1)
             
-            if self.stopped:
+            if not self.playlist:
                 continue
 
             if self.queue_pos >= len(self.playlist):
                 self.queue_pos = 0
-            
-            if not self.playlist:
-                continue
 
             self.play_song(self.playlist[self.queue_pos])
-            
+        
             self.queue_pos += 1
 
-    def play_song(self, filename):
-        self.skipped = False
-        self.pos_current = 0
+        self.pyaudio.terminate()
 
-        p = pyaudio.PyAudio()
+    def play_song(self, filename):
+        self._playing = True
+        self._skipped = False
+
         metadata = self.index.metadata[filename]
 
         # for channel in bot.config.channels:
         #     bot.msg(channel, 'Now playing: %s - %s' % (metadata.get('artist'), metadata.get('title')))
 
-        self.current_track = filename
+        self.current_song = filename
+        self.pos_cur = 0
         self.pos_end = metadata['length']
+        
+        p = pyaudio.PyAudio()
         
         if filename.endswith('.wav'):
             af = wave.open(filename, 'rb')
@@ -194,34 +197,54 @@ class AudioThread(threading.Thread):
             audio = 'mp3'
 
         # open stream
-        stream = p.open(format = format,
-                        channels = channels,
-                        rate = rate,
-                        output = True)
+        stream = p.open(
+            format = format,
+            channels = channels,
+            rate = rate,
+            output = True,
+        )
 
-        if audio == 'wav':
-            chunk = 1024
-            while self.is_playing():
-                data = af.readframes(chunk)
-                if not data:
-                    self.skipped = True
+        try:
+            while True:
+                if self._skipped:
+                    break
+                
+                if not self._playing:
+                    time.sleep(0.1)
                     continue
-                stream.write(data)
-                self.pos_current = stream.get_time()
-        elif audio == 'mp3':
-            while self.is_playing():
+
                 data = af.read()
                 if not data:
-                    self.skipped = True
-                    continue
+                    break
+
+                # Wait until we can continue streaming
                 stream.write(data)
-                self.pos_current = stream.get_time()
-            
-        stream.close()
-        p.terminate()
+
+                try:
+                    self.pos_cur = stream.get_time()
+                except IOError:
+                    pass
+        finally:
+            stream.close()
+            p.terminate()
     
     def is_playing(self):
-        return not (self.stopped or self.skipped)
+        return self._playing and self.current_song
+
+    def is_stopped(self):
+        return not self.is_playing()
+
+    def is_ready(self):
+        return self._ready
+    
+    def stop_audio(self):
+        self._playing = False
+
+    def start_audio(self):
+        self._playing = True
+
+    def skip_song(self):
+        self._skipped = True
 
 class AudioPlayer(object):
     filter_keys = ['title', 'artist', 'genre', 'album']
@@ -240,27 +263,27 @@ class AudioPlayer(object):
         self.thread = AudioThread(app, self.index)
         self.thread.start()
 
-    def is_ready(self):
-        return self.thread.is_ready
+    def __getattr__(self, attr):
+        if attr in self.__dict__:
+            if not self.thread.is_ready():
+                return
 
-    def is_playing(self):
-        return self.thread.current_track and not self.thread.stopped
-    
-    def is_stopped(self):
-        return self.thread.stopped
+            return self.__dict__[attr]
+        else:
+            return getattr(self.thread, attr)
 
     def shuffle_all(self):
         self.thread.playlist = self.index.files
         random.shuffle(self.thread.playlist)
 
     def get_song_pos(self):
-        return (self.thread.pos_current, self.thread.pos_end)
+        return (self.thread.pos_cur, self.thread.pos_end)
 
-    def get_current_track(self):
+    def get_current_song(self):
         if not self.is_ready():
             return
 
-        song = self.thread.current_track
+        song = self.thread.current_song
         if not song:
             return
 
@@ -274,27 +297,15 @@ class AudioPlayer(object):
 
         return self.play_filename(name)
 
-    def play_next(self):
-        self.thread.skipped = True
-        self.thread.stopped = False
-
     def stop_playing(self):
-        if not self.is_ready():
-            return
-
-        self.thread.stopped = True
-        self.thread.skipped = False
+        self.thread.stop_audio()
 
     def start_playing(self):
-        if not self.is_ready():
-            return
-
-        self.thread.stopped = False
-        self.thread.skipped = False
-
-        if not self.thread.playlist:
+        if not self.thread.playlist and not self.thread.current_song:
             self.thread.playlist = list(self.index.files)
             random.shuffle(self.thread.playlist)
+
+        self.thread.start_audio()
 
     def clear_playlist(self):
         self.thread.playlist = []
