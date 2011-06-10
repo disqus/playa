@@ -1,5 +1,7 @@
 Playa is a Python web service that streams music on whatever machine it's running under, as well as providing a web interface to manage what's playing.
 
+**Playa is currently under development**
+
 Install
 =======
 
@@ -44,3 +46,10 @@ Example configuration::
     WEB_PID_FILE = os.path.join(ROOT, 'playa.pid')
 
 If you change configuration you'll need to ``playa restart``.
+
+TODO
+====
+
+- Move indexes into SQLite database to avoid rebuilding continuously.
+- Create IndexThread to monitor directories for changes.
+- Refactor AudioPlayer public API to be part of AudioThread.
