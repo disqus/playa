@@ -221,18 +221,23 @@ class AudioPlayer(object):
     def clear_playlist(self):
         self.thread.playlist = []
 
-    def playlist_index(self):
+    def get_playlist_index(self):
         return self.thread.queue_pos
 
     def has_playlist(self):
         return bool(self.thread.playlist)
 
+    def get_playlist_offset(self):
+        current_offset = self.get_playlist_index()
+        return current_offset - 2 if current_offset > 3 else 0
+
     def list_playlist(self, with_playing=False, limit=None):
+        current_offset = self.get_playlist_index()
         if not limit:
             start = 0
             end = None
         else:
-            start = max(0, min(0, limit - 5))
+            start = self.get_playlist_offset()
             end = start + limit
             
         for num, song in enumerate(self.thread.playlist[start:end]):
@@ -240,7 +245,7 @@ class AudioPlayer(object):
             
             name = '%s - %s' % (metadata.get('artist'), metadata.get('title'))
             if with_playing:
-                yield start + num + 1, name, start + num == self.playlist_index()
+                yield start + num + 1, name, start + num == current_offset
             else:
                 yield start + num + 1, name
 
@@ -275,9 +280,9 @@ class AudioPlayer(object):
         if not os.path.exists(filename):
             raise ValueError
 
+        self.thread.playlist.append(filename)
         self.thread.stopped = False
         self.thread.skipped = False
-        self.thread.playlist.append(filename)
 
     def play(self):
         if not self.is_ready():

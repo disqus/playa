@@ -160,6 +160,18 @@ li.active {
     font-weight: bold;
 }
 .playlist {
-    list-style-type: none;
-    margin-left: 0;
+
+}
+table {
+    border-collapse: collapse;
+}
+thead th {
+    border-bottom: 5px solid #ddd;
+}
+tbody tr:nth-child(even) {
+    background: #f0f0f0;
+}
+th, td {
+    padding: 5px;
+    text-align: left;
 }

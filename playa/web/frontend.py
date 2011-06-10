@@ -20,7 +20,8 @@ def play_random():
 @app.route('/play/filename', methods=['GET', 'POST'])
 def play_filename():
     if 'filename' in request.form:
-        app.player.play_filename(request.form['filename'])
+        for filename in request.form.getlist('filename'):
+            app.player.play_filename(filename)
     
     return redirect('/')
 

@@ -10,10 +10,10 @@
     </form>
     
     {% if player.has_playlist() %}
-        <h2>Upcoming (next 10)</h2>
-        <ol class="playlist">
+        <h2>Upcoming</h2>
+        <ol class="playlist" start="{{ player.get_playlist_offset() + 1 }}">
             {% for num, song, is_playing in player.list_playlist(with_playing=True, limit=10) %}
-                <li{% if is_playing %} class="active"{% endif %}>{{ num }}. {{ song }}</li>
+                <li{% if is_playing %} class="active"{% endif %}>{{ song }}</li>
             {% endfor %}
         </ol>
     {% endif %}

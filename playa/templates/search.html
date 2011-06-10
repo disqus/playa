@@ -4,16 +4,35 @@
     <form method="GET" action="/search">
         <input type="text" name="q" value="{{ query or '' }}"/> <input type="submit" value="Search"/>
     </form>
-    
-    <h2>Results</h2>
-    {% if results %}
-        <ol>
-            {% for filename, metadata in results %}
-                <li><form method="POST" action="/play/filename">
-                    <input type="hidden" name="filename" value="{{ filename }}"/>
-                    {{ metadata.artist }} - {{ metadata.title }} <input type="submit" value="Queue"/>
-                </form></li>
-            {% endfor %}
-        </ol>
+
+    {% if query %}
+        <h2>Results (top 100)</h2>
+        {% if results %}
+        <form method="POST" action="/play/filename" id="results">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:16px"><input type="checkbox"/></th>
+                        <th>Song</th>
+                        <th style="width:100px;text-align:right"><input type="submit" name="Add to Queue"/></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for filename, metadata in results %}
+                        <tr>
+                            <td><input type="checkbox" name="filename" value="{{ filename }}"/></td>
+                            <td colspan="2">{{ metadata.artist }} - {{ metadata.title }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
     {% endif %}
+    
+    <script>
+    $('#results tbody tr').click(function(){
+        var $this = $(this);
+        $this.find('input[type=checkbox]').attr('checked', true);
+    });
+    </script>
 {% endblock %}
