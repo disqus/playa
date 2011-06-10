@@ -101,7 +101,7 @@ def main():
     else:
         config_path = os.path.expanduser(os.path.join('~', '.playa', 'playa.conf.py'))
         if os.path.exists(config_path):
-            app.config.from_file(config_path)
+            app.config.from_pyfile(config_path)
 
     if args[0] == 'upgrade':
         upgrade()
