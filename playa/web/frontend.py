@@ -51,7 +51,7 @@ def stop_playing():
 
 @app.route('/artists', methods=['GET'])
 def artists():
-    artists = app.player.list_by_metadata(key='artist')
+    artists = sorted(app.player.list_by_metadata(key='artist'))
     return render_template('browse/artists.html', **{
         'artists': artists,
     })
@@ -67,7 +67,7 @@ def show_artist(artist):
 
 @app.route('/genres', methods=['GET'])
 def genres():
-    genres = app.player.list_by_metadata(key='genre')
+    genres = sorted(app.player.list_by_metadata(key='genre'))
     return render_template('browse/genres.html', **{
         'genres': genres,
     })
