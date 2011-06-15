@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <h2>Artists</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Artist</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for artist in artists %}
+                <tr>
+                    <td><a href="{{ url_for('show_artist', artist=artist) }}">{{ artist }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

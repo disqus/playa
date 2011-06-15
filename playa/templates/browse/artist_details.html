@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <h2>Artist: {{ artist }}</h2>
+    <form method="POST" action="/play/filename" id="results">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:16px"><input type="checkbox"/></th>
+                    <th>Song</th>
+                    <th style="width:100px;text-align:right"><input type="submit" name="Add to Queue"/></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for filename, metadata in songs %}
+                    <tr>
+                        <td><input type="checkbox" name="filename" value="{{ filename }}"/></td>
+                        <td colspan="2">{{ metadata.artist }} - {{ metadata.title }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+{% endblock %}

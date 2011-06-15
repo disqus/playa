@@ -26,17 +26,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </form>
         {% endif %}
     {% endif %}
-    
-    <script>
-    $('#results tbody tr').click(function(){
-        var $cbx = $(this).find('input[type=checkbox]');
-        $cbx.attr('checked', !$cbx.is(':checked'));
-    });
-    $('#results thead input[type=checkbox]').change(function(){
-        var $this = $(this);
-        $('#results tbody tr input[type=checkbox]').attr('checked', $this.is(':checked'));
-    });
-    </script>
 {% endblock %}

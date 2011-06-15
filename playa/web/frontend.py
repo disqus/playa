@@ -49,6 +49,38 @@ def stop_playing():
     
     return redirect('/')
 
+@app.route('/artists', methods=['GET'])
+def artists():
+    artists = app.player.list_by_metadata(key='artist')
+    return render_template('browse/artists.html', **{
+        'artists': artists,
+    })
+
+@app.route('/artists/<artist>', methods=['GET'])
+def show_artist(artist):
+    songs = app.player.list_by_metadata(key='artist', value=artist)
+
+    return render_template('browse/artist_details.html', **{
+        'artist': artist,
+        'songs': songs,
+    })
+
+@app.route('/genres', methods=['GET'])
+def genres():
+    genres = app.player.list_by_metadata(key='genre')
+    return render_template('browse/genres.html', **{
+        'genres': genres,
+    })
+
+@app.route('/genres/<genre>', methods=['GET'])
+def show_genre(genre):
+    songs = app.player.list_by_metadata(key='genre', value=genre)
+
+    return render_template('browse/genre_details.html', **{
+        'genre': genre,
+        'songs': songs,
+    })
+
 @app.route('/search', methods=['GET'])
 def search():
     query = request.args.get('q')

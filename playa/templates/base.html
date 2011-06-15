@@ -16,6 +16,7 @@
                 {% if not player.is_ready() %}
                     <p>Please wait while Playa loads...</p>
                 {% else %}
+                    <p><a href="{{ url_for('index') }}">Home</a> | <a href="{{ url_for('artists') }}">Artists</a> | <a href="{{ url_for('genres') }}">Genres</a> | <a href="{{ url_for('search') }}">Search</a></p>
                     <div id="now-playing">
                         <div class="song-action">
                             {% if player.is_playing() %}
@@ -44,5 +45,16 @@
                 {% endif %}
             </div>
         </div>
+        
+        <script>
+        $('#results tbody tr').click(function(){
+            var $cbx = $(this).find('input[type=checkbox]');
+            $cbx.attr('checked', !$cbx.is(':checked'));
+        });
+        $('#results thead input[type=checkbox]').change(function(){
+            var $this = $(this);
+            $('#results tbody tr input[type=checkbox]').attr('checked', $this.is(':checked'));
+        });
+        </script>
     </body>
 </html>

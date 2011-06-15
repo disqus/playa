@@ -20,6 +20,7 @@ class AudioIndex(object):
         self.text_keys = text_keys
         self.tokenized = defaultdict(lambda:defaultdict(int))
         self.filters = defaultdict(lambda:defaultdict(list))
+        self.filters_ci = defaultdict(lambda:defaultdict(list))
         self.metadata = defaultdict(dict)
         self.files = []
 
@@ -50,7 +51,7 @@ class AudioIndex(object):
                 for key in ('artist', 'title', 'album', 'genre'):
                     try:
                         value = unicode(metadata[key][0])
-                    except (IndexError, KeyError), e:
+                    except (IndexError, KeyError):
                         continue
 
                     lower_value = value.lower()
@@ -61,7 +62,8 @@ class AudioIndex(object):
                         tokens.extend(filter(None, lower_value.split(' ')))
 
                     if key in self.filter_keys:
-                        self.filters[key][lower_value].append(full_path)
+                        self.filters[key][value].append(full_path)
+                        self.filters_ci[key][lower_value].append(full_path)
 
                 self.files.append(full_path)
 
@@ -78,8 +80,8 @@ class AudioIndex(object):
         for token, value in tokens.iteritems():
             if value.startswith('"') and value.endswith('"'):
                 value = value[1:-1]
-            if value in self.filters[token]:
-                for full_path in self.filters[token][value]:
+            if value in self.filters_ci[token]:
+                for full_path in self.filters_ci[token][value]:
                     filter_results[full_path] += 1
 
         if tokens and not filter_results:
@@ -357,6 +359,18 @@ class AudioPlayer(object):
         self.thread.playlist.append(filename)
         self.thread.stopped = False
         self.thread.skipped = False
+
+    def list_by_metadata(self, key, value=None, limit=None):
+        data = self.index.filters[key]
+        if value:
+            data = data[value]
+
+        for item in data:
+            if value:
+                metadata = self.index.metadata[item]
+                yield item, metadata
+            else:
+                yield item
 
     def play(self):
         if not self.is_ready():
