@@ -12,10 +12,12 @@ from collections import defaultdict
 from mutagen.mp3 import MP3
 from mutagen.easyid3 import EasyID3
 
-class AudioIndex(object):
+class AudioIndex(threading.Thread):
     RE_SEARCH_TOKENS = re.compile(r'\b([^\:]+):("[^"]*"|[^\s]*)')
 
-    def __init__(self, filter_keys, text_keys):
+    def __init__(self, app, filter_keys, text_keys):
+        super(AudioIndex, self).__init__()
+        self.app = app
         self.filter_keys = filter_keys
         self.text_keys = text_keys
         self.tokenized = defaultdict(lambda:defaultdict(int))
@@ -23,10 +25,26 @@ class AudioIndex(object):
         self.filters_ci = defaultdict(lambda:defaultdict(list))
         self.metadata = defaultdict(dict)
         self.files = []
+        self._is_ready = False
 
     def __len__(self):
         return len(self.files)
 
+    def run(self):
+        while True:
+            start = time.time()
+
+            print "Building audio index"
+
+            for path in self.app.config['AUDIO_PATHS']:
+                self.add_path(path)
+
+            print "Done! (%d entries, took %.2fs)" % (len(self), time.time() - start)
+
+            self._is_ready = True
+            
+            time.sleep(3)
+        
     def add_path(self, path):
         for fn in os.listdir(path): 
             if fn.startswith('.'):
@@ -42,6 +60,9 @@ class AudioIndex(object):
             if os.path.isdir(full_path):
                 self.add_path(full_path)
             elif fn.endswith('.mp3'):
+                if full_path in self.files:
+                    continue
+
                 metadata = EasyID3(full_path)
                 audio = MP3(full_path)
 
@@ -144,19 +165,11 @@ class AudioThread(threading.Thread):
         super(AudioThread, self).__init__()
         
     def run(self):
-        start = time.time()
-
-        print "Building audio index"
-
-        for path in self.app.config['AUDIO_PATHS']:
-            self.index.add_path(path)
-
-        print "Done! (%d entries, took %.2fs)" % (len(self.index), time.time() - start)
-        
-        self._ready = True
-        
         while True:
             time.sleep(0.1)
+            
+            if not self.index._is_ready:
+                continue
             
             if not self.playlist:
                 continue
@@ -261,7 +274,8 @@ class AudioPlayer(object):
 
     def init_app(self, app):
         self.app = app
-        self.index = AudioIndex(filter_keys=self.filter_keys, text_keys=self.text_keys)
+        self.index = AudioIndex(app=app, filter_keys=self.filter_keys, text_keys=self.text_keys)
+        self.index.start()
         self.thread = AudioThread(app, self.index)
         self.thread.start()
 
