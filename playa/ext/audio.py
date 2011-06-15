@@ -25,7 +25,7 @@ class AudioIndex(threading.Thread):
         self.filters_ci = defaultdict(lambda:defaultdict(list))
         self.metadata = defaultdict(dict)
         self.files = []
-        self._is_ready = False
+        self._ready = False
 
     def __len__(self):
         return len(self.files)
@@ -41,7 +41,7 @@ class AudioIndex(threading.Thread):
 
             print "Done! (%d entries, took %.2fs)" % (len(self), time.time() - start)
 
-            self._is_ready = True
+            self._ready = True
             
             time.sleep(3)
         
@@ -168,8 +168,10 @@ class AudioThread(threading.Thread):
         while True:
             time.sleep(0.1)
             
-            if not self.index._is_ready:
+            if not self.index._ready:
                 continue
+            
+            self._ready = True
             
             if not self.playlist:
                 continue
