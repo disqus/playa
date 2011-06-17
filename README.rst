@@ -40,14 +40,15 @@ Example configuration::
 
     DEBUG = True
 
-    SQLITE3_DATABASE = os.path.join(ROOT, 'playa.db')
-
     AUDIO_PATHS = ['/usr/share/music/']
 
     WEB_HOST = '0.0.0.0'
     WEB_PORT = 9000
     WEB_LOG_FILE = os.path.join(ROOT, 'playa.log')
     WEB_PID_FILE = os.path.join(ROOT, 'playa.pid')
+
+    DATA_PATH = os.path.join(ROOT, 'data')
+
 
 If you change configuration you'll need to ``playa restart``.
 
