@@ -84,6 +84,8 @@ class AudioIndex(threading.Thread):
                 metadata[key] = value
 
             metadata['length'] = audio.info.length
+            if not metadata['title']:
+                metadata['title'] = fn[:-4]
 
             for key, value in metadata.iteritems():
                 if key in self.text_keys:
