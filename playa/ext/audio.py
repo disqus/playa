@@ -9,8 +9,8 @@ import threading
 import time
 import wave
 from collections import defaultdict
-from mutagen.mp3 import MP3
-from mutagen.easyid3 import EasyID3
+from mutagen.easymp4 import EasyMP4
+from mutagen.mp3 import EasyMP3
 
 class AudioIndex(threading.Thread):
     RE_SEARCH_TOKENS = re.compile(r'\b([^\:]+):("[^"]*"|[^\s]*)')
@@ -45,7 +45,9 @@ class AudioIndex(threading.Thread):
             
             time.sleep(3)
         
-    def add_path(self, path):
+    def add_path(self, path, base=None):
+        if not base:
+            base = path
         for fn in os.listdir(path): 
             if fn.startswith('.'):
                 continue
@@ -58,38 +60,44 @@ class AudioIndex(threading.Thread):
                 continue
             
             if os.path.isdir(full_path):
-                self.add_path(full_path)
-            elif fn.endswith('.mp3'):
-                if full_path in self.files:
+                self.add_path(full_path, base)
+                continue
+            elif full_path in self.files:
+                continue
+
+            if fn.endswith('mp4') or fn.endswith('m4a'):
+                audio = EasyMP4(full_path)
+            elif fn.endswith('mp3'):
+                audio = EasyMP3(full_path)
+            else:
+                continue
+            
+            tokens = []
+            metadata = {}
+            
+            for key in ('artist', 'title', 'album', 'genre'):
+                try:
+                    value = unicode(audio[key][0])
+                except (IndexError, KeyError):
                     continue
 
-                metadata = EasyID3(full_path)
-                audio = MP3(full_path)
+                metadata[key] = value
 
-                self.metadata[full_path]['length'] = audio.info.length
+            metadata['length'] = audio.info.length
 
-                tokens = []
-                for key in ('artist', 'title', 'album', 'genre'):
-                    try:
-                        value = unicode(metadata[key][0])
-                    except (IndexError, KeyError):
-                        continue
+            for key, value in metadata.iteritems():
+                if key in self.text_keys:
+                    tokens.extend(filter(None, value.lower().split(' ')))
 
-                    lower_value = value.lower()
+                if key in self.filter_keys:
+                    self.filters[key][value].append(full_path)
+                    self.filters_ci[key][value.lower()].append(full_path)
 
-                    self.metadata[full_path][key] = value
+            self.metadata[full_path] = metadata
+            self.files.append(full_path)
 
-                    if key in self.text_keys:
-                        tokens.extend(filter(None, lower_value.split(' ')))
-
-                    if key in self.filter_keys:
-                        self.filters[key][value].append(full_path)
-                        self.filters_ci[key][lower_value].append(full_path)
-
-                self.files.append(full_path)
-
-                for token in tokens:
-                    self.tokenized[token][full_path] += 1
+            for token in tokens:
+                self.tokenized[token][full_path] += 1
                     
     def search(self, query):
         text_results = defaultdict(int)
@@ -206,12 +214,12 @@ class AudioThread(threading.Thread):
             channels = af.getnchannels()
             format = p.get_format_from_width(af.getsampwidth())
             audio = 'wav'
-        else:
+        elif filename.endswith('mp3') or filename.endswith('m4a'):
             af = mad.MadFile(filename)
             rate = af.samplerate()
             channels = 2
             format = p.get_format_from_width(pyaudio.paInt32)
-            audio = 'mp3'
+            audio = 'm4a'
 
         # open stream
         stream = p.open(
@@ -350,11 +358,10 @@ class AudioPlayer(object):
         for num, song in enumerate(self.thread.playlist[start:end]):
             metadata = self.index.metadata[song]
             
-            name = '%s - %s' % (metadata.get('artist'), metadata.get('title'))
             if with_playing:
-                yield start + num + 1, name, start + num == current_offset
+                yield start + num + 1, song, metadata, start + num == current_offset
             else:
-                yield start + num + 1, name
+                yield start + num + 1, song, metadata
 
     def find_song(self, query):
         if not self.is_ready():
