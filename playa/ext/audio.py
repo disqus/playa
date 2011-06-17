@@ -302,6 +302,12 @@ class AudioPlayer(object):
         self.thread.playlist = self.index.files
         random.shuffle(self.thread.playlist)
 
+    def get_num_songs(self):
+        return len(self.index.files)
+
+    def get_num_playlist_songs(self):
+        return len(self.thread.playlist)
+
     def get_song_pos(self):
         return (self.thread.pos_cur, self.thread.pos_end)
 

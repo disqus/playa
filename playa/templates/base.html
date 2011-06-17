@@ -16,7 +16,10 @@
                 {% if not player.is_ready() %}
                     <p>Please wait while Playa loads...</p>
                 {% else %}
-                    <p><a href="{{ url_for('index') }}">Home</a> | <a href="{{ url_for('artists') }}">Artists</a> | <a href="{{ url_for('genres') }}">Genres</a> | <a href="{{ url_for('search') }}">Search</a></p>
+                    <p id="nav">
+                        <span class="total-songs">{{ total_songs }} tracks{% if playlist_songs %} ({{ playlist_songs }} in playlist){% endif %}</span>
+                        <a href="{{ url_for('index') }}">Home</a> | <a href="{{ url_for('artists') }}">Artists</a> | <a href="{{ url_for('genres') }}">Genres</a> | <a href="{{ url_for('search') }}">Search</a>
+                    </p>
                     <div id="now-playing">
                         <div class="song-action">
                             {% if player.is_playing() %}
