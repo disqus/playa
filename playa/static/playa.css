@@ -59,6 +59,9 @@ h1, h2, h3 {
     padding: 20px 20px 0;
     background: #fff;
 }
+#footer {
+    padding: 0 20px 0;
+}
 
 .progress-bar {
     height: 1.4em;
