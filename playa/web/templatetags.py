@@ -9,7 +9,7 @@ def duration(seconds):
 @app.template_filter('song_title')
 def song_title(metadata):
     if 'artist' in metadata:
-        return '%s - %s' % (metdata['artist'], metadata['title'])
+        return '%s - %s' % (metadata['artist'], metadata['title'])
     return metadata['title']
 
 app.template_filter('urlquote')(urllib.quote)
