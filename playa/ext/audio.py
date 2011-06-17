@@ -1,5 +1,10 @@
 from __future__ import absolute_import
 
+try:
+    import cPickle as pickle
+except:
+    import pickle
+
 import mad
 import os
 import pyaudio
@@ -25,16 +30,23 @@ class AudioIndex(threading.Thread):
         self.filters_ci = defaultdict(lambda:defaultdict(list))
         self.metadata = defaultdict(dict)
         self.files = []
+        self._data_file = os.path.join(self.app.config['DATA_PATH'], 'index.db')
         self._ready = False
 
     def __len__(self):
         return len(self.files)
 
     def run(self):
+        if os.path.exists(self._data_file):
+            self.load()
+            self._ready = True
+        
         while True:
             start = time.time()
 
             print "Building audio index"
+
+            prev = tuple(self.files)
 
             for path in self.app.config['AUDIO_PATHS']:
                 self.add_path(path)
@@ -42,9 +54,46 @@ class AudioIndex(threading.Thread):
             print "Done! (%d entries, took %.2fs)" % (len(self), time.time() - start)
 
             self._ready = True
+
+            if tuple(self.files) != prev:
+                self.save()
             
             time.sleep(3)
         
+    
+    def load(self):
+        start = time.time()
+
+        print "Loading cached audio index"
+
+        with open(self._data_file, 'rb') as fp:
+            try:
+                for k, v in pickle.load(fp).iteritems():
+                    if isinstance(v, dict):
+                        getattr(self, k).update(v)
+                    else:
+                        setattr(self, k, v)
+            except EOFError:
+                pass
+
+        print "Done! (%d entries, took %.2fs)" % (len(self), time.time() - start)
+
+    def save(self):
+        start = time.time()
+
+        print "Saving cached audio index"
+
+        with open(self._data_file, 'wb') as fp:
+            pickle.dump({
+                'tokenized': dict(self.tokenized),
+                'filters': dict(self.filters),
+                'filters_ci': dict(self.filters_ci),
+                'metadata': dict(self.metadata),
+                'files': self.files,
+            }, fp)
+
+        print "Done! (%d entries, took %.2fs)" % (len(self), time.time() - start)
+    
     def add_path(self, path, base=None):
         if not base:
             base = path
@@ -215,13 +264,11 @@ class AudioThread(threading.Thread):
             rate = af.getframerate()
             channels = af.getnchannels()
             format = p.get_format_from_width(af.getsampwidth())
-            audio = 'wav'
         elif filename.endswith('mp3') or filename.endswith('m4a'):
             af = mad.MadFile(filename)
             rate = af.samplerate()
             channels = 2
             format = p.get_format_from_width(pyaudio.paInt32)
-            audio = 'm4a'
 
         # open stream
         stream = p.open(

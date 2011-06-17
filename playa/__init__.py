@@ -23,11 +23,6 @@ app = Flask(__name__)
 app.config.from_object('playa.conf.PlayaConfig')
 app.config.from_envvar('PLAYA_SETTINGS', silent=True)
 
-# Setup database
-from playa.ext.sqlite3 import SQLite3
-
-app.db = SQLite3(app).get_db()
-
 # Import views/templatetags to ensure registration
 import playa.web.context_processors
 import playa.web.templatetags

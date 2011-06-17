@@ -66,7 +66,9 @@ class PlayaServer(DaemonRunner):
             wsgi.server(eventlet.listen((self.host, self.port)), app)
 
 def upgrade():
-    pass
+    # create our data path if it doesnt exist
+    if not os.path.exists(app.config['DATA_PATH']):
+        os.makedirs(app.config['DATA_PATH'])
 
 def main():
     command_list = ('start', 'stop', 'restart', 'upgrade')
