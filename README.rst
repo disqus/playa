@@ -54,7 +54,7 @@ If you change configuration you'll need to ``playa restart``.
 TODO
 ====
 
-- Move indexes into SQLite database to avoid rebuilding continuously.
-- Create IndexThread to monitor directories for changes.
+- Move data into SQLite database to avoid rebuilding continuously.
+- Replace infinite directory looping behavior with inotify/MacFS event apis in AudioIndex
 - Refactor AudioPlayer public API to be part of AudioThread.
 - Add dynamic playlists support via SQLite
