@@ -18,10 +18,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for filename, metadata in results %}
+                    {% for filename in results %}
                         <tr>
                             <td><input type="checkbox" name="filename" value="{{ filename }}"/></td>
-                            <td colspan="2">{{ metadata|song_title }}</td>
+                            <td colspan="2">{{ filename|song_title }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

@@ -9,8 +9,8 @@
     {% if player.has_playlist() %}
         <h2>Upcoming <a href="{{ url_for('clear_playlist') }}">Clear</a></h2>
         <ol class="playlist" start="{{ player.get_playlist_offset() + 1 }}">
-            {% for num, filename, metadata, is_playing in player.list_playlist(with_playing=True, limit=100) %}
-                <li{% if is_playing %} class="active"{% endif %}>{{ metadata|song_title }}</li>
+            {% for num, filename, is_playing in player.list_playlist(with_playing=True, limit=100) %}
+                <li{% if is_playing %} class="active"{% endif %}>{{ filename|song_title }}</li>
             {% endfor %}
         </ol>
     {% endif %}

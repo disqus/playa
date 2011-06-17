@@ -122,7 +122,9 @@ class AudioIndex(threading.Thread):
                 continue
             
             tokens = []
-            metadata = {}
+            metadata = {
+                'filename': fn[:-4],
+            }
             
             for key in ('artist', 'title', 'album', 'genre'):
                 try:
@@ -133,8 +135,6 @@ class AudioIndex(threading.Thread):
                 metadata[key] = value
 
             metadata['length'] = audio.info.length
-            if not metadata['title']:
-                metadata['title'] = fn[:-4]
 
             for key, value in metadata.iteritems():
                 if key in self.text_keys:
@@ -411,12 +411,10 @@ class AudioPlayer(object):
             end = start + limit
             
         for num, song in enumerate(self.thread.playlist[start:end]):
-            metadata = self.index.metadata[song]
-            
             if with_playing:
-                yield start + num + 1, song, metadata, start + num == current_offset
+                yield start + num + 1, song, start + num == current_offset
             else:
-                yield start + num + 1, song, metadata
+                yield start + num + 1, song
 
     def find_song(self, query):
         if not self.is_ready():
@@ -444,11 +442,7 @@ class AudioPlayer(object):
             data = data[value]
 
         for item in data:
-            if value:
-                metadata = self.index.metadata[item]
-                yield item, metadata
-            else:
-                yield item
+            yield item
 
     def play(self):
         if not self.is_ready():

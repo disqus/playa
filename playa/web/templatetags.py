@@ -7,9 +7,18 @@ def duration(seconds):
     return '%s:%s' % (int(seconds / 60), ('0' + str(int(seconds % 60)))[-2:])
 
 @app.template_filter('song_title')
-def song_title(metadata):
+def song_title(full_path):
+    try:
+        metadata = app.player.get_metadata(full_path)
+    except KeyError:
+        return full_path
+
     if 'artist' in metadata:
         return '%s - %s' % (metadata['artist'], metadata['title'])
-    return metadata['title']
+
+    if 'title' in metadata:
+        return metadata['title']
+
+    return full_path
 
 app.template_filter('urlquote')(urllib.quote)
