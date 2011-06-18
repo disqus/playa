@@ -68,7 +68,7 @@ h1, h2, h3 {
 }
 
 .progress-bar {
-    height: 1.4em;
+    height: 1em;
     background-color: #fff;
     position: relative;
     -moz-border-radius: 8px;
@@ -79,14 +79,14 @@ h1, h2, h3 {
 .progress-bar div {
     -moz-border-radius: 8px;
     border-radius: 8px;
-    height: 1.4em;
+    height: 1em;
     background-color: #ff7824;
 }
 
 .progress-bar strong {
     -moz-border-radius: 8px;
     border-radius: 8px;
-    height: 1.4em;
+    height: 1em;
     display: block;
     vertical-align: middle;
     line-height: 1.8em;
@@ -115,7 +115,7 @@ h1, h2, h3 {
 }
 #now-playing .song-action {
     position: absolute;
-    bottom: 10px;
+    bottom: 8px;
     left: 10px;
     padding: 4px 0;
     text-align: center;
