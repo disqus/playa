@@ -9,23 +9,19 @@ The current iteration, likely to change a lot:
 Install
 =======
 
-Installation is brutal, due to a couple of packages not being very nice. Please read the documentation on PyAudio and pymad for full installation instructions.
+For now, we're going to assume you're on a OS X, as it hasn't been tested elsewhere.
 
-For now, we're going to assume you're on a UNIX based operating system.
+1. Start by installing `VLC Player <http://videolan.org/>`_ (specifically you need libvlc).
 
-1. Start by installing `PyAudio <http://people.csail.mit.edu/hubert/pyaudio/>`_.
-
-2. Continue on to `pymad <http://spacepants.org/src/pymad/>`_.
-
-3. Install Playa::
+2. Install Playa::
 
     pip install https://github.com/disqus/playa/zipball/master
 
-4. Start the service::
+3. Start the service::
 
     playa start
 
-5. Visit http://localhost:9000 in your browser.
+4. Visit http://localhost:9000 in your browser.
 
 Configuration
 =============
