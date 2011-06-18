@@ -2,7 +2,7 @@
 
 {% block body %}
     <h2>Genre: {{ genre }}</h2>
-    <form method="POST" action="/play/filename" id="results">
+    <form method="POST" action="{{ url_for('play_filename') }}" id="results">
         <table>
             <thead>
                 <tr>

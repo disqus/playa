@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block body %}
-    <form method="GET" action="/search" id="search">
+    <form method="GET" action="{{ url_for('search') }}" id="search">
         <input type="text" name="q" value="{{ query or '' }}" placeholder="search music"/>
     </form>
 
     {% if query %}
         <h2>Results (top 100)</h2>
         {% if results %}
-        <form method="POST" action="/play/filename" id="results">
+        <form method="POST" action="{{ url_for('play_filename') }}" id="results">
             <table>
                 <thead>
                     <tr>

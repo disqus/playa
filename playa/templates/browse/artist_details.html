@@ -4,7 +4,7 @@
     <h2>Artist: {{ artist }}</h2>
     {% if albums %}
         <h3>Albums</h3>
-        <form method="POST" action="/play/album">
+        <form method="POST" action="{{ url_for('play_album') }}">
             <input type="hidden" name="artist" value="{{ artist }}"/>
             <table>
                 <thead>
@@ -26,7 +26,7 @@
         </form>
     {% endif %}
     <h3>Songs</h3>
-    <form method="POST" action="/play/filename">
+    <form method="POST" action="{{ url_for('play_filename') }}">
         <table>
             <thead>
                 <tr>
