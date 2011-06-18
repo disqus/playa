@@ -5,17 +5,16 @@ try:
 except:
     import pickle
 
-import mad
 import os
-import pyaudio
 import random
 import re
 import threading
 import time
-import wave
 from collections import defaultdict
 from mutagen.easymp4 import EasyMP4
 from mutagen.mp3 import EasyMP3
+
+from playa.lib import vlc
 
 class AudioIndex(threading.Thread):
     RE_SEARCH_TOKENS = re.compile(r'\b([^\:]+):("[^"]*"|[^\s]*)')
@@ -217,9 +216,11 @@ class AudioThread(threading.Thread):
 
         self.index = index
 
-        self._skipped = False
-        self._playing = False
         self._ready = False
+        self._playing = False
+
+        self.vlc = vlc.Instance()
+        self.player = self.vlc.media_player_new()
 
         super(AudioThread, self).__init__()
         
@@ -231,6 +232,14 @@ class AudioThread(threading.Thread):
                 continue
             
             self._ready = True
+            
+            if not self._playing:
+                continue
+            
+            if self.is_playing():
+                self.pos_cur = self.player.get_time()
+                self.pos_end = self.player.get_length()
+                continue
             
             if not self.playlist:
                 continue
@@ -245,81 +254,31 @@ class AudioThread(threading.Thread):
         self.pyaudio.terminate()
 
     def play_song(self, filename):
-        self._playing = True
-        self._skipped = False
-
-        metadata = self.index.metadata[filename]
-
-        # for channel in bot.config.channels:
-        #     bot.msg(channel, 'Now playing: %s - %s' % (metadata.get('artist'), metadata.get('title')))
-
         self.current_song = filename
-        self.pos_cur = 0
-        self.pos_end = metadata['length']
-        
-        p = pyaudio.PyAudio()
-        
-        if filename.endswith('.wav'):
-            af = wave.open(filename, 'rb')
-            rate = af.getframerate()
-            channels = af.getnchannels()
-            format = p.get_format_from_width(af.getsampwidth())
-        elif filename.endswith('mp3') or filename.endswith('m4a'):
-            af = mad.MadFile(filename)
-            rate = af.samplerate()
-            channels = 2
-            format = p.get_format_from_width(pyaudio.paInt32)
+        self.media = self.vlc.media_new(unicode(self.current_song))
+        self.player.set_media(self.media)
+        self._playing = True
+        self.player.play()
 
-        # open stream
-        stream = p.open(
-            format = format,
-            channels = channels,
-            rate = rate,
-            output = True,
-        )
-
-        try:
-            while True:
-                if self._skipped:
-                    self._skipped = False
-                    break
-                
-                if not self._playing:
-                    time.sleep(0.1)
-                    continue
-
-                data = af.read()
-                if not data:
-                    break
-
-                # Wait until we can continue streaming
-                stream.write(data)
-
-                try:
-                    self.pos_cur = stream.get_time()
-                except IOError:
-                    pass
-        finally:
-            stream.close()
-            p.terminate()
-    
     def is_playing(self):
-        return self._playing and self.current_song
+        return self.player.is_playing()
 
     def is_stopped(self):
         return not self.is_playing()
 
     def is_ready(self):
         return self._ready
-    
+
     def stop_audio(self):
+        self.player.pause()
         self._playing = False
 
     def start_audio(self):
+        self.player.play()
         self._playing = True
 
     def skip_song(self):
-        self._skipped = True
+        self.player.stop()
 
 class AudioPlayer(object):
     filter_keys = ['title', 'artist', 'genre', 'album']
