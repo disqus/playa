@@ -2,13 +2,37 @@
 
 {% block body %}
     <h2>Artist: {{ artist }}</h2>
-    <form method="POST" action="/play/filename" id="results">
+    {% if albums %}
+        <h3>Albums</h3>
+        <form method="POST" action="/play/album">
+            <input type="hidden" name="artist" value="{{ artist }}"/>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:16px"><input type="checkbox"/></th>
+                        <th>Album</th>
+                        <th style="width:100px;text-align:right"><input type="submit" value="Add to Queue"/></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for album, song_count in albums.iteritems() %}
+                        <tr>
+                            <td><input type="checkbox" name="album" value="{{ album }}"/></td>
+                            <td colspan="2">{{ album }}<br/><small>{{ song_count }} song{% if song_count != 1 %}s{% endif %}</small></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    {% endif %}
+    <h3>Songs</h3>
+    <form method="POST" action="/play/filename">
         <table>
             <thead>
                 <tr>
                     <th style="width:16px"><input type="checkbox"/></th>
                     <th>Song</th>
-                    <th style="width:100px;text-align:right"><input type="submit" name="Add to Queue"/></th>
+                    <th style="width:100px;text-align:right"><input type="submit" value="Add to Queue"/></th>
                 </tr>
             </thead>
             <tbody>

@@ -1,5 +1,6 @@
 from playa import app
 
+from collections import defaultdict
 from flask import render_template, redirect, request
 
 @app.before_request
@@ -24,6 +25,18 @@ def play_filename():
             app.player.play_filename(filename)
     
     return redirect('/')
+
+@app.route('/play/album', methods=['GET', 'POST'])
+def play_album():
+    songs_by_artist = app.player.list_by_metadata(key='artist', value=request.form['artist'])
+    album_list = request.form.getlist('album')
+    for filename in songs_by_artist:
+        metadata = app.player.get_metadata(filename)
+        if metadata.get('album') in album_list:
+            app.player.play_filename(filename)
+    
+    return redirect('/')
+
 
 @app.route('/playlist/clear', methods=['GET', 'POST'])
 def clear_playlist():
@@ -58,10 +71,17 @@ def artists():
 
 @app.route('/artists/<artist>', methods=['GET'])
 def show_artist(artist):
-    songs = app.player.list_by_metadata(key='artist', value=artist)
+    songs = list(app.player.list_by_metadata(key='artist', value=artist))
+    
+    albums = defaultdict(int)
+    for song in songs:
+        metadata = app.player.get_metadata(song)
+        if 'album' in metadata:
+            albums[metadata['album']] += 1
 
     return render_template('browse/artist_details.html', **{
         'artist': artist,
+        'albums': albums,
         'songs': songs,
     })
 

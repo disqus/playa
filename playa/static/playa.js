@@ -53,12 +53,14 @@ Playa.player = function(){
     $(this.init);
 }();
 
-$('#results tbody tr').click(function(){
-    var $this = $(this);
-    var $cbx = $this.find('input[type=checkbox]');
-    $cbx.attr('checked', !$cbx.is(':checked'));
-});
-$('#results thead input[type=checkbox]').change(function(){
-    var $this = $(this);
-    $('#results tbody tr input[type=checkbox]').attr('checked', $this.is(':checked'));
+$(function(){
+    $('tbody tr').click(function(){
+        var $this = $(this);
+        var $cbx = $this.find('input[type=checkbox]');
+        $cbx.attr('checked', !$cbx.is(':checked'));
+    });
+    $('thead input[type=checkbox]').change(function(){
+        var $this = $(this);
+        $this.parents('table').find('tbody tr input[type=checkbox]').attr('checked', $this.is(':checked'));
+    });
 });
