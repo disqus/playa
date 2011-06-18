@@ -51,7 +51,6 @@ If you change configuration you'll need to ``playa restart``.
 TODO
 ====
 
-- Add support to indexer to remove files which no longer exist
 - Replace infinite directory looping behavior with inotify/MacFS event apis in AudioIndex
 - Refactor AudioPlayer public API to be part of AudioThread.
 - Add dynamic playlists support

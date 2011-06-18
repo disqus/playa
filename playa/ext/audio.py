@@ -12,6 +12,26 @@ from mutagen.mp3 import EasyMP3
 from playa.common.storage import load, save
 from playa.lib import vlc
 
+# class Playlists(object):
+#     def __init__(self, app):
+#         self.app = app
+#         self.playlists = {}
+#         self.add_path(os.path.join(self.app.config['DATA_PATH'], 'playlists'))
+# 
+#     def add_path(self, path, base=None):
+#         if not base:
+#             base = path
+#         for fn in os.listdir(path): 
+#             if fn.startswith('.'):
+#                 continue
+# 
+#             full_path = os.path.join(path, fn)
+#             if os.path.isdir(full_path):
+#                 self.add_path(path, base)
+#                 continue
+#             
+#             self.playlists[full_path] = load(full_path)
+
 class AudioIndex(threading.Thread):
     RE_SEARCH_TOKENS = re.compile(r'\b([^\:]+):("[^"]*"|[^\s]*)')
 
@@ -42,6 +62,10 @@ class AudioIndex(threading.Thread):
             print "Building audio index"
 
             prev = tuple(self.files)
+
+            for num, full_path in enumerate(prev):
+                if not os.path.exists(full_path):
+                    del self.files[self.files.index(full_path)]
 
             for path in self.app.config['AUDIO_PATHS']:
                 self.add_path(path)
