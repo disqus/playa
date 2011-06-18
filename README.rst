@@ -40,8 +40,6 @@ Example configuration::
 
     DEBUG = True
 
-    SQLITE3_DATABASE = os.path.join(ROOT, 'playa.db')
-
     AUDIO_PATHS = ['/usr/share/music/']
 
     WEB_HOST = '0.0.0.0'
@@ -49,11 +47,15 @@ Example configuration::
     WEB_LOG_FILE = os.path.join(ROOT, 'playa.log')
     WEB_PID_FILE = os.path.join(ROOT, 'playa.pid')
 
+    DATA_PATH = os.path.join(ROOT, 'data')
+
+
 If you change configuration you'll need to ``playa restart``.
 
 TODO
 ====
 
+- Add support to indexer to remove files which no longer exist
 - Replace infinite directory looping behavior with inotify/MacFS event apis in AudioIndex
 - Refactor AudioPlayer public API to be part of AudioThread.
 - Add dynamic playlists support
