@@ -1,10 +1,5 @@
 from __future__ import absolute_import
 
-try:
-    import cPickle as pickle
-except:
-    import pickle
-
 import os
 import random
 import re
@@ -14,6 +9,7 @@ from collections import defaultdict
 from mutagen.easymp4 import EasyMP4
 from mutagen.mp3 import EasyMP3
 
+from playa.common.storage import load, save
 from playa.lib import vlc
 
 class AudioIndex(threading.Thread):
@@ -61,37 +57,24 @@ class AudioIndex(threading.Thread):
         
     
     def load(self):
-        start = time.time()
-
-        print "Loading cached audio index"
-
-        with open(self._data_file, 'rb') as fp:
-            try:
-                for k, v in pickle.load(fp).iteritems():
-                    if isinstance(v, dict):
-                        getattr(self, k).update(v)
-                    else:
-                        setattr(self, k, v)
-            except EOFError:
-                pass
-
-        print "Done! (%d entries, took %.2fs)" % (len(self), time.time() - start)
+        results = load(self._data_file)
+        if not results:
+            return
+        
+        for k, v in results.iteritems():
+            if isinstance(v, dict):
+                getattr(self, k).update(v)
+            else:
+                setattr(self, k, v)
 
     def save(self):
-        start = time.time()
-
-        print "Saving cached audio index"
-
-        with open(self._data_file, 'wb') as fp:
-            pickle.dump({
-                'tokenized': dict(self.tokenized),
-                'filters': dict(self.filters),
-                'filters_ci': dict(self.filters_ci),
-                'metadata': dict(self.metadata),
-                'files': self.files,
-            }, fp)
-
-        print "Done! (%d entries, took %.2fs)" % (len(self), time.time() - start)
+        save(self._data_file, {
+            'tokenized': dict(self.tokenized),
+            'filters': dict(self.filters),
+            'filters_ci': dict(self.filters_ci),
+            'metadata': dict(self.metadata),
+            'files': self.files,
+        })
     
     def add_path(self, path, base=None):
         if not base:
@@ -244,13 +227,14 @@ class AudioThread(threading.Thread):
             if not self.playlist:
                 continue
 
+            if self.current_song:
+                self.queue_pos += 1
+            
             if self.queue_pos >= len(self.playlist):
                 self.queue_pos = 0
 
             self.play_song(self.playlist[self.queue_pos])
         
-            self.queue_pos += 1
-
         self.pyaudio.terminate()
 
     def play_song(self, filename):
