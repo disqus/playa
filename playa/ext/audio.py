@@ -237,8 +237,8 @@ class AudioThread(threading.Thread):
                 continue
             
             if self.is_playing():
-                self.pos_cur = self.player.get_time()
-                self.pos_end = self.player.get_length()
+                self.pos_cur = self.player.get_time() / 1000
+                self.pos_end = self.player.get_length() / 1000
                 continue
             
             if not self.playlist:
