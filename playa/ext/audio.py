@@ -281,6 +281,7 @@ class AudioThread(threading.Thread):
         try:
             while True:
                 if self._skipped:
+                    self._skipped = False
                     break
                 
                 if not self._playing:
@@ -364,11 +365,7 @@ class AudioPlayer(object):
         if not self.is_ready():
             return
 
-        song = self.thread.current_song
-        if not song:
-            return
-
-        return self.index.metadata[song]
+        return self.thread.current_song
 
     def play_random(self):
         if not self.is_ready():

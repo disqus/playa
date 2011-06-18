@@ -8,7 +8,16 @@
             Playa
         </title>
         <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='playa.css') }}"/>
+        <script>
+        var Playa = {};
+        Playa.apiUrlMap = {
+            'now_playing': '{{ url_for('now_playing') }}',
+            'stop_playing': '{{ url_for('stop_playing') }}',
+            'start_playing': '{{ url_for('start_playing') }}'
+        };
+        </script>
         <script src="{{ url_for('static', filename='jquery.js') }}"></script>
+        <script src="{{ url_for('static', filename='playa.js') }}"></script>
     </head>
     <body>
         <div id="container">
@@ -22,18 +31,18 @@
                     </p>
                     <div id="now-playing">
                         <div class="song-action">
-                            {% if player.is_playing() %}
+                            {% if now_playing.playing %}
                                 <a href="{{ url_for('stop_playing') }}" class="pause-button">Pause</a>
                             {% else %}
                                 <a href="{{ url_for('start_playing') }}" class="play-button">Play</a>
                             {% endif %}
                         </div>
-                        {% if current_song %}
-                            <div class="song-name">{{ current_song.artist }} - {{ current_song.title }}</div>
-                            <div class="song-pos">-{{ (player.get_song_pos()[1] - player.get_song_pos()[0])|duration }}</div>
-                            <div class="song-album">{{ current_song.album }}</div>
+                        {% if now_playing.title %}
+                            <div class="song-name">{{ now_playing.title }}</div>
+                            <div class="song-pos">-{{ (now_playing.duration - now_playing.position)|duration }}</div>
+                            <div class="song-album">{{ now_playing.album or '' }}</div>
                             <div class="progress-bar">
-                                <div style="width: {{ player.get_song_pos()[0] / player.get_song_pos()[1] * 100 }}%"></div>
+                                <div style="width: {{ now_playing.position / now_playing.duration * 100 }}%"></div>
                             </div>
                         {% else %}
                             <div class="song-name"></div>
@@ -53,15 +62,5 @@
                 Playa | Conjured up by the <a href="http://code.disqus.com">DISQUS</a> team and other noble <a href="https://github.com/disqus/playa/contributors">sorcerers</a>.
             </div>
         </div>
-        <script>
-        $('#results tbody tr').click(function(){
-            var $cbx = $(this).find('input[type=checkbox]');
-            $cbx.attr('checked', !$cbx.is(':checked'));
-        });
-        $('#results thead input[type=checkbox]').change(function(){
-            var $this = $(this);
-            $('#results tbody tr input[type=checkbox]').attr('checked', $this.is(':checked'));
-        });
-        </script>
     </body>
 </html>
