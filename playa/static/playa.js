@@ -13,8 +13,13 @@ Playa.player = function(){
     var self = this;
     
     this.init = function(){
-        if ($('now-playing')) {
+        if ($('#now-playing')) {
             self.startTimer();
+            var $vol = $('#now-playing .volume-bar');
+            $vol.click(function(){
+                var max = $vol.width();
+                self.setVolume(event.offsetX / max);
+            });
         }
     };
     
@@ -30,6 +35,20 @@ Playa.player = function(){
         self.timer = setInterval(self.fetch, 500);
     };
     
+    this.setVolume = function(value){
+        $.ajax({
+            type: 'POST',
+            url: Playa.apiUrlMap.set_volume,
+            dataType: 'json',
+            data: {
+                'value': value
+            },
+            success: function(data){
+                $('#now-playing .volume-bar div').width(data.value + '%');
+            }
+        });
+    };
+    
     this.update = function(data){
          var $np = $('#now-playing');
          if (data.playing) {
@@ -41,12 +60,12 @@ Playa.player = function(){
              $np.find('.song-name').html(data.title);
              $np.find('.song-pos').html('-' + Playa.utils.duration(data.duration - data.position));
              $np.find('.song-album').html(data.album || '');
-             $np.find('.progress-bar div').css('width', (data.position / data.duration * 100) + '%');
+             $np.find('.song-position div').css('width', (data.position / data.duration * 100) + '%');
          } else {
              $np.find('.song-name').html('');
              $np.find('.song-pos').html('');
              $np.find('.song-album').html('');
-             $np.find('.progress-bar div').css('width', 0);
+             $np.find('.song-position div').css('width', 0);
          }
     }
     

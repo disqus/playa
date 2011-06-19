@@ -12,6 +12,7 @@
         var Playa = {};
         Playa.apiUrlMap = {
             'now_playing': '{{ url_for('now_playing') }}',
+            'set_volume': '{{ url_for('set_volume') }}',
             'stop_playing': '{{ url_for('stop_playing') }}',
             'start_playing': '{{ url_for('start_playing') }}'
         };
@@ -30,6 +31,9 @@
                         <a href="{{ url_for('index') }}">Home</a> | <a href="{{ url_for('artists') }}">Artists</a> | <a href="{{ url_for('genres') }}">Genres</a> | <a href="{{ url_for('search') }}">Search</a>
                     </p>
                     <div id="now-playing">
+                        <div class="progress-bar volume-bar">
+                            <div style="width:{{ player.get_volume() }}%"></div>
+                        </div>
                         <div class="song-action">
                             {% if now_playing.playing %}
                                 <a href="{{ url_for('stop_playing') }}" class="pause-button">Pause</a>
@@ -41,8 +45,8 @@
                             <div class="song-name">{{ now_playing.title }}</div>
                             <div class="song-pos">-{{ (now_playing.duration - now_playing.position)|duration }}</div>
                             <div class="song-album">{{ now_playing.album or '' }}</div>
-                            <div class="progress-bar">
-                                <div style="width: {{ now_playing.position / now_playing.duration * 100 }}%"></div>
+                            <div class="song-position progress-bar">
+                                <div style="width:{{ now_playing.position / now_playing.duration * 100 }}%"></div>
                             </div>
                         {% else %}
                             <div class="song-name"></div>
@@ -53,6 +57,7 @@
                             </div>
                         {% endif %}
                     </div>
+                    
                     {% block body %}{% endblock %}
                 {% endif %}
             </div>

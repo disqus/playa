@@ -285,6 +285,12 @@ class AudioThread(threading.Thread):
         self.player.play()
         self._playing = True
 
+    def get_volume(self):
+        return self.player.audio_get_volume()
+    
+    def set_volume(self, arg):
+        return self.player.audio_set_volume(int(float(arg)*100))
+
     def skip_song(self):
         self.player.stop()
 

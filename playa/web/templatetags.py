@@ -13,10 +13,10 @@ def song_title(full_path):
     except KeyError:
         return full_path
 
-    if 'artist' in metadata:
+    if 'artist' in metadata and 'title' in metadata:
         return '%s - %s' % (metadata['artist'], metadata['title'])
 
-    if 'title' in metadata:
+    elif 'title' in metadata:
         return metadata['title']
 
     return full_path
