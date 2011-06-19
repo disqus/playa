@@ -263,9 +263,9 @@ class AudioThread(threading.Thread):
 
     def play_song(self, filename):
         self.current_song = filename
+        self._playing = True
         self.media = self.vlc.media_new(unicode(self.current_song))
         self.player.set_media(self.media)
-        self._playing = True
         self.player.play()
 
     def is_playing(self):
@@ -276,6 +276,9 @@ class AudioThread(threading.Thread):
 
     def is_ready(self):
         return self._ready
+
+    def seek(self, pos):
+        self.player.set_time(int(self.pos_end * float(pos) * 1000))
 
     def stop_audio(self):
         self.player.pause()

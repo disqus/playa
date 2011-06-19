@@ -17,3 +17,8 @@ def set_volume():
         'value': app.player.get_volume()
     })
 
+@app.route('/api/seek', methods=['POST'])
+def seek():
+    pos = request.form['pos']
+    app.player.seek(pos)
+    return simplejson.dumps({})

@@ -13,6 +13,7 @@
         Playa.apiUrlMap = {
             'now_playing': '{{ url_for('now_playing') }}',
             'set_volume': '{{ url_for('set_volume') }}',
+            'seek': '{{ url_for('seek') }}',
             'stop_playing': '{{ url_for('stop_playing') }}',
             'start_playing': '{{ url_for('start_playing') }}'
         };
@@ -52,7 +53,7 @@
                             <div class="song-name"></div>
                             <div class="song-pos"></div>
                             <div class="song-album"></div>
-                            <div class="progress-bar">
+                            <div class="song-position progress-bar">
                                 <div style="width:0"></div>
                             </div>
                         {% endif %}

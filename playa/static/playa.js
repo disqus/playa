@@ -20,6 +20,12 @@ Playa.player = function(){
                 var max = $vol.width();
                 self.setVolume(event.offsetX / max);
             });
+
+            var $seek = $('#now-playing .song-position');
+            $seek.click(function(){
+                var max = $seek.width();
+                self.seek(event.offsetX / max);
+            });
         }
     };
     
@@ -45,6 +51,20 @@ Playa.player = function(){
             },
             success: function(data){
                 $('#now-playing .volume-bar div').width(data.value + '%');
+            }
+        });
+    };
+    
+    this.seek = function(value){
+        $.ajax({
+            type: 'POST',
+            url: Playa.apiUrlMap.seek,
+            dataType: 'json',
+            data: {
+                'pos': value
+            },
+            success: function(data){
+                // $('#now-playing .volume-bar div').width(data.value + '%');
             }
         });
     };
