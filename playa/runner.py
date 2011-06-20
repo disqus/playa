@@ -62,11 +62,6 @@ class PlayaServer(DaemonRunner):
             self.do_action()
 
     def run(self):
-        # Init audio player
-        from playa.ext.audio import AudioPlayer
-
-        app.player = AudioPlayer(app)
-
         upgrade()
 
         if self.debug:
