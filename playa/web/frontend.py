@@ -38,7 +38,7 @@ def play_album():
     return redirect('/')
 
 
-@app.route('/playlist/clear', methods=['GET', 'POST'])
+@app.route('/queue/clear', methods=['GET', 'POST'])
 def clear_queue():
     app.player.clear_queue()
     
