@@ -80,7 +80,7 @@ Playa.player = function(){
              $np.find('.song-name').html(data.title);
              $np.find('.song-pos').html('-' + Playa.utils.duration(data.duration - data.position));
              $np.find('.song-album').html(data.album || '');
-             $np.find('.song-position div').css('width', (data.position / data.duration * 100) + '%');
+             $np.find('.song-position div').css('width', data.percent_complete + '%');
          } else {
              $np.find('.song-name').html('');
              $np.find('.song-pos').html('');

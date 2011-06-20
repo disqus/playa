@@ -39,8 +39,8 @@ def play_album():
 
 
 @app.route('/playlist/clear', methods=['GET', 'POST'])
-def clear_playlist():
-    app.player.clear_playlist()
+def clear_queue():
+    app.player.clear_queue()
     
     return redirect('/')
 
@@ -52,13 +52,16 @@ def next_track():
 
 @app.route('/play', methods=['GET', 'POST'])
 def start_playing():
-    app.player.start_playing()
+    if not app.player.queue:
+        app.player.shuffle_all()
+    
+    app.player.start_audio()
     
     return redirect('/')
 
 @app.route('/stop', methods=['GET', 'POST'])
 def stop_playing():
-    app.player.stop_playing()
+    app.player.stop_audio()
     
     return redirect('/')
 

@@ -47,7 +47,7 @@
                             <div class="song-pos">-{{ (now_playing.duration - now_playing.position)|duration }}</div>
                             <div class="song-album">{{ now_playing.album or '' }}</div>
                             <div class="song-position progress-bar">
-                                <div style="width:{{ now_playing.position / now_playing.duration * 100 }}%"></div>
+                                <div style="width:{{ now_playing.percent_complete }}%"></div>
                             </div>
                         {% else %}
                             <div class="song-name"></div>

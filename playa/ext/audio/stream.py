@@ -4,6 +4,7 @@ import threading
 import time
 
 from playa.lib import vlc
+from playa.ext.audio.queue import Queue
 
 class AudioStream(threading.Thread):
     def __init__(self, app, index):
@@ -11,8 +12,7 @@ class AudioStream(threading.Thread):
 
         self.current_song = None
 
-        self.queue = []
-        self.queue_pos = 0
+        self.queue = Queue()
         
         self.pos_cur = 0
         self.pos_end = 0
@@ -47,13 +47,7 @@ class AudioStream(threading.Thread):
             if not self.queue:
                 continue
 
-            if self.current_song:
-                self.queue_pos += 1
-            
-            if self.queue_pos >= len(self.queue):
-                self.queue_pos = 0
-
-            self.play_song(self.queue[self.queue_pos])
+            self.play_song(self.queue.next())
         
         self.pyaudio.terminate()
 
@@ -93,3 +87,34 @@ class AudioStream(threading.Thread):
     def skip_song(self):
         self.player.stop()
 
+    # Queue controls
+
+    def get_current_song(self):
+        return self.queue.current()
+
+    def shuffle_all(self):
+        self.queue.clear()
+        self.queue.extend(self.index.files)
+        self.queue.shuffle()
+
+    def clear_queue(self):
+        self.queue.clear()
+
+    def get_queue_offset(self):
+        current_offset = self.queue.pos
+        return current_offset - 2 if current_offset > 3 else 0
+
+    def list_queue(self, with_playing=False, limit=None):
+        current_offset = self.queue.pos
+        if not limit:
+            start = 0
+            end = None
+        else:
+            start = current_offset
+            end = start + limit
+            
+        for num, song in enumerate(self.queue[start:end]):
+            if with_playing:
+                yield start + num + 1, song, start + num == current_offset
+            else:
+                yield start + num + 1, song

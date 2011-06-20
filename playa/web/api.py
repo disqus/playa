@@ -22,3 +22,9 @@ def seek():
     pos = request.form['pos']
     app.player.seek(pos)
     return simplejson.dumps({})
+
+@app.route('/api/shuffle_all', methods=['POST'])
+def shuffle_all():
+    app.player.shuffle_all()
+    
+    return redirect('/')
