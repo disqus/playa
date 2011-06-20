@@ -32,10 +32,10 @@ from playa.db import db
 db.init_app(app)
 
 # Init audio player
-from playa.ext.audio import AudioPlayer
-
-app.player = AudioPlayer(app)
-
+# from playa.ext.audio import AudioPlayer
+# 
+# app.player = AudioPlayer(app)
+# 
 # Import views/templatetags to ensure registration
 import playa.web.context_processors
 import playa.web.templatetags

@@ -62,6 +62,11 @@ class PlayaServer(DaemonRunner):
             self.do_action()
 
     def run(self):
+        # Init audio player
+        from playa.ext.audio import AudioPlayer
+
+        app.player = AudioPlayer(app)
+
         upgrade()
 
         if self.debug:
@@ -103,7 +108,7 @@ def main():
 
     if options.config:
         # assumed to be a file
-        app.config.from_file(options.config)
+        app.config.from_pyfile(options.config)
     else:
         config_path = os.path.expanduser(os.path.join('~', '.playa', 'playa.conf.py'))
         if os.path.exists(config_path):
