@@ -113,12 +113,16 @@ h1, h2, h3 {
 #now-playing .progress-bar {
     margin-left: 20px;
 }
+#now-playing .song-name {
+    width: 420px;
+    overflow: hidden;
+}
 #now-playing .volume-bar {
     width: 150px;
     height: 5px;
     position: absolute;
     right: 10px;
-    top: 15px;
+    top: 16px;
 }
 #now-playing .song-action {
     position: absolute;
