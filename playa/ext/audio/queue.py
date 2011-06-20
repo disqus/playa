@@ -23,6 +23,12 @@ class Queue(object):
         self.queue = []
         self.pos = -1
 
+    def seek(self, pos):
+        if self.pos >= len(self.queue):
+            raise ValueError
+        
+        self.pos = pos
+
     def next(self):
         self.pos += 1
 
