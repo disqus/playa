@@ -57,6 +57,9 @@ class AudioStream(threading.Thread):
         self.media = self.vlc.media_new(unicode(self.current_song))
         self.player.set_media(self.media)
         self.player.play()
+        # XXX: ensure we dont return until audio has started
+        while not self.is_playing():
+            continue
 
     def is_playing(self):
         return self.player.is_playing()
@@ -90,7 +93,7 @@ class AudioStream(threading.Thread):
     # Queue controls
 
     def get_current_song(self):
-        return self.queue.current()
+        return self.current_song
 
     def shuffle_all(self):
         self.queue.clear()
@@ -105,7 +108,7 @@ class AudioStream(threading.Thread):
         return current_offset - 2 if current_offset > 3 else 0
 
     def list_queue(self, with_playing=False, limit=None):
-        current_offset = self.queue.pos
+        current_offset = self.get_queue_offset()
         if not limit:
             start = 0
             end = None
