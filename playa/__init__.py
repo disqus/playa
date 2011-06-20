@@ -1,6 +1,9 @@
 """
-Playa
+playa
 ~~~~~
+
+:copyright: (c) 2011 DISQUS.
+:license: Apache License 2.0, see LICENSE for more details.
 """
 
 try:
@@ -9,7 +12,7 @@ try:
 except Exception, e:
     VERSION = 'unknown'
 
-__all__ = ('VERSION', 'capture')
+__all__ = ('VERSION',)
 
 # XXX: IT IS VERY IMPOTANT THAT NOTHING HAPPENS BEFORE APP IS DECLARED
 

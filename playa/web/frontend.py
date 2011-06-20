@@ -1,3 +1,11 @@
+"""
+playa.web.frontend
+~~~~~~~~~~~~~~~~~~
+
+:copyright: (c) 2011 DISQUS.
+:license: Apache License 2.0, see LICENSE for more details.
+"""
+
 from playa import app
 from playa.db import db
 

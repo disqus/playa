@@ -1,3 +1,11 @@
+"""
+playa.models
+~~~~~~~~~~~~
+
+:copyright: (c) 2011 DISQUS.
+:license: Apache License 2.0, see LICENSE for more details.
+"""
+
 from BTrees.OOBTree import OOBTree
 from playa.ext.zodb import Model, Timestamp, Boolean, \
                            UUID4
