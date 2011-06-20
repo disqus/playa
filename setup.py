@@ -22,15 +22,14 @@ setup(
     packages=find_packages(),
     zip_safe=False,
     install_requires=[
-        'Flask',
-        'mutagen',
-        # good luck installing these
-        # 'pymad==0.6', # http://spacepants.org/src/pymad/download/pymad-0.6.tar.gz
-        # 'pyaudio',
-        'simplejson',
-        # python-daemon and eventlet are required to run the Sentry indepenent webserver
-        'python-daemon>=1.6',
         'eventlet>=0.9.15',
+        'Flask',
+        'Flask-WTF',
+        'mutagen',
+        'python-daemon>=1.6',
+        'simplejson',
+        'zodb3',
+
         # uuid ensures compatibility with older versions of Python
         'uuid',
     ],

@@ -1,4 +1,5 @@
 from playa import app
+from playa.db import db
 
 from collections import defaultdict
 from flask import render_template, redirect, request
@@ -11,6 +12,8 @@ def check_state():
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
+
+## API methods (move to api.py)
 
 @app.route('/play/random', methods=['GET', 'POST'])
 def play_random():
@@ -65,6 +68,8 @@ def stop_playing():
     
     return redirect('/')
 
+## Browse panes
+
 @app.route('/artists', methods=['GET'])
 def artists():
     artists = sorted(app.player.list_by_metadata(key='artist'), key=lambda x: x.lower())
@@ -103,6 +108,16 @@ def show_genre(genre):
         'genre': genre,
         'songs': songs,
     })
+
+## Playlists
+
+@app.route('/playlists', methods=['GET'])
+def playlists():
+    return render_template('playlists/index.html', **{
+        'playlists': db['playlists'].values(),
+    })
+
+## Search
 
 @app.route('/search', methods=['GET'])
 def search():

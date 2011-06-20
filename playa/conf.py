@@ -2,7 +2,6 @@
 Represents the default values for all Sentry settings.
 """
 
-import logging
 import os
 import os.path
 
@@ -19,3 +18,5 @@ class PlayaConfig(object):
     WEB_PID_FILE = os.path.join(ROOT, 'playa.pid')
     
     DATA_PATH = os.path.join(ROOT, 'data')
+    
+    SECRET_KEY = '_#(wkvb#@%%!x-dd!xt&i-1g5rylz4q&t6%m5u@3&7hyuqd437'

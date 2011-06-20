@@ -10,7 +10,7 @@ def api(func):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
         resp = func(*args, **kwargs)
-        if request.is_xhr:
+        if not request.is_xhr:
             return redirect(url_for('index'))
         return simplejson.dumps(resp or {})
     return wrapped
