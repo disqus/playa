@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <h2>Add Playlist</h2>
+    <form method="POST" action="">
+        {{ form.csrf }}
+        <div class="form-row">
+            {{ form.name.label }}
+            {{ form.name(size=20) }}
+            <input type="submit" value="Save">
+        </div>
+    </form>
+{% endblock %}

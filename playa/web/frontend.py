@@ -10,7 +10,8 @@ from playa import app
 from playa.db import db
 
 from collections import defaultdict
-from flask import render_template, redirect, request
+from flask import render_template, redirect, request, flash, url_for
+from playa.forms import NewPlaylistForm, EditPlaylistForm
 
 @app.before_request
 def check_state():
@@ -123,6 +124,36 @@ def show_genre(genre):
 def playlists():
     return render_template('playlists/index.html', **{
         'playlists': db['playlists'].values(),
+    })
+
+@app.route('/playlists/edit/<id>', methods=['GET', 'POST'])
+def edit_playlist(id):
+    playlist = db['playlists'][id]
+    form = EditPlaylistForm(name=playlist.name)
+    if form.validate_on_submit():
+        playlist = db['playlists'].new(name=form.name.data)
+
+        flash("Success")
+
+        return redirect(url_for('edit_playlist', id=playlist.id))
+
+    return render_template('playlists/edit.html', **{
+        'playlist': playlist,
+        'form': form,
+    })
+
+@app.route('/playlists/add', methods=['GET', 'POST'])
+def add_playlist():
+    form = NewPlaylistForm()
+    if form.validate_on_submit():
+        playlist = db['playlists'].new(name=form.name.data)
+
+        flash("Success")
+
+        return redirect(url_for('edit_playlist', id=playlist.id))
+
+    return render_template('playlists/add.html', **{
+        'form': form,
     })
 
 ## Search
