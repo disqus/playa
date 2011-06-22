@@ -86,61 +86,63 @@ class AudioIndex(threading.Thread):
             'files': self.files,
         })
     
-    def add_path(self, path, base=None):
-        if not base:
-            base = path
-        for fn in os.listdir(path): 
-            if fn.startswith('.'):
-                continue
-
-            full_path = os.path.join(path, fn)
-
-            try:
-                unicode(full_path)
-            except:
-                continue
-            
-            if os.path.isdir(full_path):
-                self.add_path(full_path, base)
-                continue
-            elif full_path in self.files:
-                continue
-
-            if fn.endswith('mp4') or fn.endswith('m4a'):
-                audio = EasyMP4(full_path)
-            elif fn.endswith('mp3'):
-                audio = EasyMP3(full_path)
-            else:
-                continue
-            
-            tokens = []
-            metadata = {
-                'filename': fn[:-4],
-            }
-            
-            for key in ('artist', 'title', 'album', 'genre'):
-                try:
-                    value = unicode(audio[key][0])
-                except (IndexError, KeyError):
+    def add_path(self, path):
+        dir_list = [path]
+        
+        while dir_list:
+            path = dir_list.pop()
+            for fn in os.listdir(path): 
+                if fn.startswith('.'):
                     continue
 
-                metadata[key] = value
+                full_path = os.path.join(path, fn)
 
-            metadata['length'] = audio.info.length
+                try:
+                    unicode(full_path)
+                except:
+                    continue
+            
+                if os.path.isdir(full_path):
+                    dir_list.append(full_path)
+                    continue
+                elif full_path in self.files:
+                    continue
 
-            for key, value in metadata.iteritems():
-                if key in self.text_keys:
-                    tokens.extend(filter(None, value.lower().split(' ')))
+                if fn.endswith('mp4') or fn.endswith('m4a'):
+                    audio = EasyMP4(full_path)
+                elif fn.endswith('mp3'):
+                    audio = EasyMP3(full_path)
+                else:
+                    continue
+            
+                tokens = []
+                metadata = {
+                    'filename': fn[:-4],
+                }
+            
+                for key in ('artist', 'title', 'album', 'genre'):
+                    try:
+                        value = unicode(audio[key][0])
+                    except (IndexError, KeyError):
+                        continue
 
-                if key in self.filter_keys:
-                    self.filters[key][value].append(full_path)
-                    self.filters_ci[key][value.lower()].append(full_path)
+                    metadata[key] = value
 
-            self.metadata[full_path] = metadata
-            self.files.append(full_path)
+                metadata['length'] = audio.info.length
 
-            for token in tokens:
-                self.tokenized[token][full_path] += 1
+                for key, value in metadata.iteritems():
+                    if key in self.text_keys:
+                        tokens.extend(filter(None, value.lower().split(' ')))
+
+                    if key in self.filter_keys:
+                        self.filters[key][value].append(full_path)
+                        self.filters_ci[key][value.lower()].append(full_path)
+
+                self.metadata[full_path] = metadata
+                self.files.append(full_path)
+
+                for token in tokens:
+                    self.tokenized[token][full_path] += 1
                     
     def search(self, query):
         text_results = defaultdict(int)
