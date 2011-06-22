@@ -24,27 +24,18 @@ app = Flask(__name__)
 app.config.from_object('playa.conf.PlayaConfig')
 app.config.from_envvar('PLAYA_SETTINGS', silent=True)
 
-def run(func):
-    """
-    We wrap all initialization logic (post-config)
-    inside of the run method to ensure that any
-    changes to configuration (at run-time) are loaded
-    before background tasks fire.
-    """
-    def wrapped(*args, **kwargs):
-        # Init ZODB
-        from playa.db import db
-        db.init_app(app)
+# Init ZODB
+from playa.db import db
+db.init_app(app)
 
-        # Init audio player
-        from playa.ext.audio import AudioPlayer
+@app.before_request
+def init_audio():
+    if hasattr(app, 'player'):
+        return
+    # Init audio player
+    from playa.ext.audio import AudioPlayer
 
-        app.player = AudioPlayer(app)
-    
-        return func(*args, **kwargs)
-    return wrapped
-
-app.run = run(app.run)
+    app.player = AudioPlayer(app)
 
 # Import views/templatetags to ensure registration
 import playa.web.context_processors
