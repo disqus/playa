@@ -8,7 +8,7 @@ playa.models
 
 from BTrees.OOBTree import OOBTree
 from playa.ext.zodb import Model, Timestamp, Boolean, \
-                           UUID4
+                           UUID4, List
 
 import bcrypt
 import uuid
@@ -51,6 +51,7 @@ class Playlist(Model):
     owner = User
     collaborative = Boolean
     date_created = Timestamp
+    files = List
     
     def __unicode__(self):
         return self.name
