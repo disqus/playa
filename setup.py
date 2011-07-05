@@ -22,6 +22,7 @@ setup(
     packages=find_packages(),
     zip_safe=False,
     install_requires=[
+        'bcrypt',
         'eventlet>=0.9.15',
         'Flask',
         'Flask-WTF',
