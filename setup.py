@@ -22,11 +22,11 @@ setup(
     packages=find_packages(),
     zip_safe=False,
     install_requires=[
-        'bcrypt',
         'eventlet>=0.9.15',
         'Flask',
         'Flask-WTF',
         'mutagen',
+        'py-bcrypt',
         'python-daemon>=1.6',
         'simplejson',
         'zodb3',
