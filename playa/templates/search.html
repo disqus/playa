@@ -18,7 +18,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for filename in results %}
+                    {% for filename, metadata in results %}
                         <tr>
                             <td><input type="checkbox" name="filename" value="{{ filename }}"/></td>
                             <td colspan="2">{{ filename|song_title }}</td>
