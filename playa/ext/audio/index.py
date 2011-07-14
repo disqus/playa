@@ -8,6 +8,7 @@ playa.ext.audio.index
 
 from __future__ import absolute_import
 
+import hashlib
 import os.path
 import re
 import time
@@ -17,6 +18,48 @@ from collections import defaultdict
 from mutagen.easymp4 import EasyMP4
 from mutagen.mp3 import EasyMP3
 from playa.common.storage import load, save
+
+def get_metadata(full_path):
+    metadata = {
+        'filename': os.path.basename(full_path)[:-4],
+    }
+    
+    if full_path.endswith('mp4') or full_path.endswith('m4a'):
+        id3_cls = EasyMP4
+    elif full_path.endswith('mp3'):
+        id3_cls = EasyMP3
+    else:
+        id3_cls = None
+    
+    if id3_cls:
+        try:
+            audio = id3_cls(full_path)
+        except Exception, e:
+            print e
+            audio = None
+    
+        if audio:
+            for key in ('artist', 'title', 'album', 'genre'):
+                try:
+                    value = unicode(audio[key][0])
+                except (IndexError, KeyError):
+                    continue
+
+                metadata[key] = value
+
+            metadata['length'] = audio.info.length
+    
+    return metadata
+
+def get_key(full_path):
+    metadata = get_metadata(full_path)
+
+    key = tuple([metadata.get(k) for k in ('artist', 'title', 'album')])
+
+    if not any(key):
+        key = hashlib.md5(full_path).hexdigest()
+
+    return key
 
 class AudioIndex(threading.Thread):
     RE_SEARCH_TOKENS = re.compile(r'\b([^\:]+):("[^"]*"|[^\s]*)')
@@ -30,7 +73,7 @@ class AudioIndex(threading.Thread):
         self.filters = defaultdict(lambda:defaultdict(list))
         self.filters_ci = defaultdict(lambda:defaultdict(list))
         self.metadata = defaultdict(dict)
-        self.files = []
+        self.files = {}
         self._data_file = os.path.join(self.app.config['DATA_PATH'], 'index.db')
         self._ready = False
 
@@ -47,11 +90,11 @@ class AudioIndex(threading.Thread):
 
             print "Building audio index"
 
-            prev = tuple(self.files)
+            prev = self.files.keys()
 
-            for num, full_path in enumerate(prev):
+            for key, full_path in self.files.iteritems():
                 if not os.path.exists(full_path):
-                    del self.files[self.files.index(full_path)]
+                    del self.files[key]
 
             for path in self.app.config['AUDIO_PATHS']:
                 self.add_path(path)
@@ -60,7 +103,7 @@ class AudioIndex(threading.Thread):
 
             self._ready = True
 
-            if tuple(self.files) != prev:
+            if self.files.keys() != prev:
                 self.save()
             
             time.sleep(3)
@@ -72,6 +115,9 @@ class AudioIndex(threading.Thread):
             return
         
         for k, v in results.iteritems():
+            if k == 'files' and not isinstance(v, dict):
+                continue
+            
             if isinstance(v, dict):
                 getattr(self, k).update(v)
             else:
@@ -105,34 +151,16 @@ class AudioIndex(threading.Thread):
                 if os.path.isdir(full_path):
                     dir_list.append(full_path)
                     continue
-                elif full_path in self.files:
+                elif full_path in self.files.values():
                     continue
 
                 try:
-                    if fn.endswith('mp4') or fn.endswith('m4a'):
-                        audio = EasyMP4(full_path)
-                    elif fn.endswith('mp3'):
-                        audio = EasyMP3(full_path)
-                    else:
-                        continue
+                    metadata = get_metadata(full_path)
                 except Exception, e:
                     print e
                     continue
                 
                 tokens = []
-                metadata = {
-                    'filename': fn[:-4],
-                }
-            
-                for key in ('artist', 'title', 'album', 'genre'):
-                    try:
-                        value = unicode(audio[key][0])
-                    except (IndexError, KeyError):
-                        continue
-
-                    metadata[key] = value
-
-                metadata['length'] = audio.info.length
 
                 for key, value in metadata.iteritems():
                     if key in self.text_keys:
@@ -143,7 +171,7 @@ class AudioIndex(threading.Thread):
                         self.filters_ci[key][value.lower()].append(full_path)
 
                 self.metadata[full_path] = metadata
-                self.files.append(full_path)
+                self.files[get_key(full_path)] = full_path
 
                 for token in tokens:
                     self.tokenized[token][full_path] += 1
