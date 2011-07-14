@@ -115,7 +115,7 @@ class AudioIndex(threading.Thread):
                         audio = EasyMP3(full_path)
                     else:
                         continue
-                except OSError, e:
+                except Exception, e:
                     print e
                     continue
                 
