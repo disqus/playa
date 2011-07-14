@@ -108,13 +108,17 @@ class AudioIndex(threading.Thread):
                 elif full_path in self.files:
                     continue
 
-                if fn.endswith('mp4') or fn.endswith('m4a'):
-                    audio = EasyMP4(full_path)
-                elif fn.endswith('mp3'):
-                    audio = EasyMP3(full_path)
-                else:
+                try:
+                    if fn.endswith('mp4') or fn.endswith('m4a'):
+                        audio = EasyMP4(full_path)
+                    elif fn.endswith('mp3'):
+                        audio = EasyMP3(full_path)
+                    else:
+                        continue
+                except OSError, e:
+                    print e
                     continue
-            
+                
                 tokens = []
                 metadata = {
                     'filename': fn[:-4],
