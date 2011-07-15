@@ -60,7 +60,7 @@ class AudioPlayer(object):
         if not self.is_ready():
             return
         
-        name = self.index.files[random.randint(0, len(self.index.files))]
+        name = self.index.files.values()[random.randint(0, len(self.index.files))]
 
         return self.play_filename(name)
 

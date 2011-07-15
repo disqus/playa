@@ -105,7 +105,7 @@ class AudioStream(threading.Thread):
 
     def shuffle_all(self):
         self.queue.clear()
-        self.queue.extend(self.index.files)
+        self.queue.extend(self.index.files.values())
         self.queue.shuffle()
 
     def clear_queue(self):
