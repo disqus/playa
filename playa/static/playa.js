@@ -1,17 +1,46 @@
 if (Playa === undefined) {
     var Playa = {};
 }
-Playa.utils = {};
+if (Playa.utils === undefined) {
+    Playa.utils = {};
+}
+
 Playa.utils.duration = function(seconds){
     var minutes = parseInt(seconds / 60, 10);
-    var seconds = ('0' + parseInt(seconds % 60, 10));
+    seconds = ('0' + parseInt(seconds % 60, 10));
     seconds = seconds.substr(seconds.length - 2);
     return minutes + ':' + seconds;
 };
 
+Playa.queue = function(){
+    var self = this;
+
+    this.add = function(filename){
+        $.ajax({
+            url: Playa.apiUrlMap.add_to_queue,
+            data: {
+                filename: filename
+            },
+            type: 'POST',
+            dataType: 'json'
+        });
+    };
+
+    this.init = function(){
+        // map all .btn-queue to this.add
+        $('a.btn-queue').click(function(e){
+            console.log($(this).attr('data-filename'));
+            e.stopPropagation();
+            self.add($(this).attr('data-filename'));
+        });
+    };
+
+    $(this.init);
+}();
+
 Playa.player = function(){
     var self = this;
-    
+
     this.init = function(){
         if ($('#now-playing')) {
             self.startTimer();
@@ -28,7 +57,7 @@ Playa.player = function(){
             });
         }
     };
-    
+
     this.fetch = function(){
         $.ajax({
             url: Playa.apiUrlMap.now_playing,
@@ -36,11 +65,11 @@ Playa.player = function(){
             success: self.update
         });
     };
-    
+
     this.startTimer = function(){
         self.timer = setInterval(self.fetch, 500);
     };
-    
+
     this.setVolume = function(value){
         $.ajax({
             type: 'POST',
@@ -54,7 +83,7 @@ Playa.player = function(){
             }
         });
     };
-    
+
     this.seek = function(value){
         $.ajax({
             type: 'POST',
@@ -68,7 +97,7 @@ Playa.player = function(){
             }
         });
     };
-    
+
     this.update = function(data){
          var $np = $('#now-playing');
          if (data.playing) {
@@ -78,17 +107,19 @@ Playa.player = function(){
          }
          if (data.title) {
              $np.find('.song-name').html(data.title);
+             $np.find('.song-artist').html(data.artist || '');
              $np.find('.song-pos').html('-' + Playa.utils.duration(data.duration - data.position));
              $np.find('.song-album').html(data.album || '');
              $np.find('.song-position div').css('width', data.percent_complete + '%');
          } else {
              $np.find('.song-name').html('');
+             $np.find('.song-artist').html('');
              $np.find('.song-pos').html('');
              $np.find('.song-album').html('');
              $np.find('.song-position div').css('width', 0);
          }
-    }
-    
+    };
+
     $(this.init);
 }();
 

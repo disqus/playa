@@ -20,6 +20,7 @@ from optparse import OptionParser
 
 from playa import VERSION, app
 
+
 class PlayaServer(DaemonRunner):
     pidfile_timeout = 10
     start_message = u"started with pid %(pid)d"
@@ -31,7 +32,7 @@ class PlayaServer(DaemonRunner):
 
         logfile = os.path.realpath(logfile)
         pidfile = os.path.realpath(pidfile or app.config['WEB_PID_FILE'])
-        
+
         if daemonize:
             detach_process = True
         else:
@@ -69,10 +70,12 @@ class PlayaServer(DaemonRunner):
         else:
             wsgi.server(eventlet.listen((self.host, self.port)), app)
 
+
 def upgrade():
     # create our data path if it doesnt exist
     if not os.path.exists(app.config['DATA_PATH']):
         os.makedirs(app.config['DATA_PATH'])
+
 
 def main():
     command_list = ('start', 'stop', 'restart', 'upgrade')
@@ -110,7 +113,7 @@ def main():
             app.config.from_pyfile(config_path)
 
     if args[0] == 'upgrade':
-        upgrade()
+        upgrade(app)
 
     elif args[0] == 'start':
         web = PlayaServer(host=options.host, port=options.port,
@@ -121,7 +124,7 @@ def main():
     elif args[0] == 'restart':
         web = PlayaServer()
         web.execute(args[0])
-  
+
     elif args[0] == 'stop':
         web = PlayaServer(pidfile=options.pidfile, logfile=options.logfile)
         web.execute(args[0])

@@ -12,9 +12,8 @@ try:
 except Exception, e:
     VERSION = 'unknown'
 
-__all__ = ('VERSION',)
+__all__ = ('VERSION', 'app')
 
-# XXX: IT IS VERY IMPOTANT THAT NOTHING HAPPENS BEFORE APP IS DECLARED
 
 from flask import Flask
 
@@ -22,11 +21,11 @@ app = Flask(__name__)
 
 # Build configuration
 app.config.from_object('playa.conf.PlayaConfig')
-app.config.from_envvar('PLAYA_SETTINGS', silent=True)
 
 # Init ZODB
 from playa.db import db
 db.init_app(app)
+
 
 @app.before_request
 def init_audio():
@@ -37,8 +36,21 @@ def init_audio():
 
     app.player = AudioPlayer(app)
 
+
+@app.before_request
+def init_disqus():
+    if hasattr(app, 'disqus'):
+        return
+    import disqusapi
+
+    app.disqus = disqusapi.DisqusAPI(app.config['DISQUS_SECRET'], app.config['DISQUS_PUBLIC'])
+
+
 # Import views/templatetags to ensure registration
 import playa.web.context_processors
 import playa.web.templatetags
 import playa.web.api
 import playa.web.frontend
+
+if __name__ == '__main__':
+    app.run()

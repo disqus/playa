@@ -1,70 +1,5 @@
-/* http://www.positioniseverything.net/easyclearing.html */
-.clearfix:after {
-    content: ".";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
-}
-.clearfix {display: inline-block;}
-/* Hides from IE-mac \*/
-.clearfix {display: block;}
-* html .clearfix {height: 1%;}
-/* end hide from IE-mac */
-
-html * { padding:0; margin:0; }
-body * * { padding:0; }
 body {
-    font: small "Lucida Grande", "Lucida Sans", verdana, sans-serif;
-    background: #E5E5E5;
-}
-h1 a { color: inherit; text-decoration: none; }
-h2 span { font-size:80%; color:#666; font-weight:normal; }
-
-h1, h2, h3, h4, h5, h6 {
-    font-weight: normal;
-}
-
-h1, h2, h3, h4, h5, h6, p, ul,
-table, form, pre, ol { margin-bottom: 20px; }
-ol, ul { margin: 0 0 20px 20px; }
-ol { margin-left: 30px; }
-
-a { color: #333; }
-a:visited { color: inherit; }
-
-pre {
-    display: block;
-    white-space: pre-wrap;       /* CSS-3                  */
-    white-space: -moz-pre-wrap;  /* Mozilla, since 1999    */
-    white-space: -pre-wrap;      /* Opera 4-6              */
-    white-space: -o-pre-wrap;    /* Opera 7                */
-    word-wrap: break-word;       /* Internet Explorer 5.5+ */
-}
-
-img {
-    max-width: 100%;
-}
-
-h1, h2, h3 {
-    color: #ff7824;
-}
-
-#container {
-    position: relative;
-    margin: 10px;
-    -moz-border-radius: 8px;
-    border-radius: 8px;
-    max-width: 600px;
-    padding: 20px 20px 0;
-    background: #fff;
-}
-#footer {
-    padding: 0 20px 0;
-}
-#nav .total-songs {
-    float: right;
-    color: #666;
+    padding-top: 60px;
 }
 
 .progress-bar {
@@ -80,7 +15,16 @@ h1, h2, h3 {
     -moz-border-radius: 8px;
     border-radius: 8px;
     height: 100%;
-    background-color: #ff7824;
+    background-color: #339bb9;
+    background-repeat: repeat-x;
+    background-image: -khtml-gradient(linear, left top, left bottom, from(#5bc0de), to(#339bb9));
+    background-image: -moz-linear-gradient(top, #5bc0de, #339bb9);
+    background-image: -ms-linear-gradient(top, #5bc0de, #339bb9);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #5bc0de), color-stop(100%, #339bb9));
+    background-image: -webkit-linear-gradient(top, #5bc0de, #339bb9);
+    background-image: -o-linear-gradient(top, #5bc0de, #339bb9);
+    background-image: linear-gradient(top, #5bc0de, #339bb9);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5bc0de', endColorstr='#339bb9', GradientType=0);
 }
 
 .progress-bar strong {
@@ -103,12 +47,31 @@ h1, h2, h3 {
 #now-playing {
     position: relative;
     margin-bottom: 10px;
-    -moz-border-radius: 8px;
-    border-radius: 8px;
-    background: #ff7824;
     color: #fff;
     padding: 10px;
     margin-bottom: 30px;
+    background-color: #339bb9;
+    background-repeat: repeat-x;
+    background-image: -khtml-gradient(linear, left top, left bottom, from(#5bc0de), to(#339bb9));
+    background-image: -moz-linear-gradient(top, #5bc0de, #339bb9);
+    background-image: -ms-linear-gradient(top, #5bc0de, #339bb9);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #5bc0de), color-stop(100%, #339bb9));
+    background-image: -webkit-linear-gradient(top, #5bc0de, #339bb9);
+    background-image: -o-linear-gradient(top, #5bc0de, #339bb9);
+    background-image: linear-gradient(top, #5bc0de, #339bb9);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5bc0de', endColorstr='#339bb9', GradientType=0);
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    border-color: #339bb9 #339bb9 #22697d;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    border-width: 1px;
+    border-style: solid;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 #now-playing .progress-bar {
     margin-left: 20px;
@@ -116,6 +79,8 @@ h1, h2, h3 {
 #now-playing .song-name {
     width: 420px;
     overflow: hidden;
+    font-weight: bold;
+    color: #404040;
 }
 #now-playing .volume-bar {
     width: 150px;
@@ -175,7 +140,6 @@ h1, h2, h3 {
     height: 18px;
 }
 #search input[type=text] {
-    width: 100%;
     padding: 5px;
     font-size: 1em;
     background: #eee;
@@ -189,19 +153,4 @@ h1, h2, h3 {
 }
 .playlist {
     line-height: 20px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-thead th {
-    border-bottom: 5px solid #ddd;
-}
-tbody tr:nth-child(even) {
-    background: #f0f0f0;
-}
-th, td {
-    padding: 5px;
-    text-align: left;
 }

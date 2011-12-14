@@ -18,7 +18,7 @@ setup(
     author='David Cramer',
     author_email='dcramer@gmail.com',
     url='http://github.com/dcramer/playa',
-    description = 'Audio Playing Service',
+    description='Audio Playing Service',
     packages=find_packages(),
     zip_safe=False,
     install_requires=[
@@ -40,7 +40,7 @@ setup(
     extras_require={'test': tests_require},
     test_suite='nose.main',
     include_package_data=True,
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'playa = playa.runner:main',
         ],

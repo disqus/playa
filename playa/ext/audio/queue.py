@@ -8,16 +8,17 @@ playa.ext.audio.queue
 
 import random
 
+
 class Queue(object):
     def __init__(self):
         self.clear()
-    
+
     def __getitem__(self, *args):
         return self.queue.__getitem__(*args)
-    
+
     def __len__(self):
         return len(self.queue)
-    
+
     def __ne__(self):
         return bool(self.queue)
 
@@ -34,7 +35,7 @@ class Queue(object):
     def seek(self, pos):
         if self.pos >= len(self.queue):
             raise ValueError
-        
+
         self.pos = pos
 
     def next(self):

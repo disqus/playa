@@ -11,6 +11,7 @@ Represents the default values for all settings.
 import os
 import os.path
 
+
 class PlayaConfig(object):
     ROOT = os.path.normpath(os.path.dirname(__file__))
 
@@ -22,7 +23,10 @@ class PlayaConfig(object):
     WEB_PORT = 9000
     WEB_LOG_FILE = os.path.join(ROOT, 'playa.log')
     WEB_PID_FILE = os.path.join(ROOT, 'playa.pid')
-    
+
     DATA_PATH = os.path.join(ROOT, 'data')
-    
+
     SECRET_KEY = '_#(wkvb#@%%!x-dd!xt&i-1g5rylz4q&t6%m5u@3&7hyuqd437'
+
+    DISQUS_PUBLIC = None
+    DISQUS_SECRET = None

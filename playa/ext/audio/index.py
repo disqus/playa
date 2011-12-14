@@ -19,25 +19,26 @@ from mutagen.easymp4 import EasyMP4
 from mutagen.mp3 import EasyMP3
 from playa.common.storage import load, save
 
+
 def get_metadata(full_path):
     metadata = {
         'filename': os.path.basename(full_path)[:-4],
     }
-    
+
     if full_path.endswith('mp4') or full_path.endswith('m4a'):
         id3_cls = EasyMP4
     elif full_path.endswith('mp3'):
         id3_cls = EasyMP3
     else:
         id3_cls = None
-    
+
     if id3_cls:
         try:
             audio = id3_cls(full_path)
         except Exception, e:
             print e
             audio = None
-    
+
         if audio:
             for key in ('artist', 'title', 'album', 'genre'):
                 try:
@@ -48,8 +49,9 @@ def get_metadata(full_path):
                 metadata[key] = value
 
             metadata['length'] = audio.info.length
-    
+
     return metadata
+
 
 def get_key(full_path):
     metadata = get_metadata(full_path)
@@ -61,6 +63,7 @@ def get_key(full_path):
 
     return key
 
+
 class AudioIndex(threading.Thread):
     RE_SEARCH_TOKENS = re.compile(r'\b([^\:]+):("[^"]*"|[^\s]*)')
 
@@ -69,9 +72,9 @@ class AudioIndex(threading.Thread):
         self.app = app
         self.filter_keys = filter_keys
         self.text_keys = text_keys
-        self.tokenized = defaultdict(lambda:defaultdict(int))
-        self.filters = defaultdict(lambda:defaultdict(list))
-        self.filters_ci = defaultdict(lambda:defaultdict(list))
+        self.tokenized = defaultdict(lambda: defaultdict(int))
+        self.filters = defaultdict(lambda: defaultdict(list))
+        self.filters_ci = defaultdict(lambda: defaultdict(list))
         self.metadata = defaultdict(dict)
         self.files = {}
         self._data_file = os.path.join(self.app.config['DATA_PATH'], 'index.db')
@@ -84,7 +87,7 @@ class AudioIndex(threading.Thread):
         if os.path.exists(self._data_file):
             self.load()
             self._ready = True
-        
+
         while True:
             start = time.time()
 
@@ -92,7 +95,7 @@ class AudioIndex(threading.Thread):
 
             prev = self.files.keys()
 
-            for key, full_path in self.files.iteritems():
+            for key, full_path in self.files.items():
                 if not os.path.exists(full_path):
                     del self.files[key]
 
@@ -105,19 +108,18 @@ class AudioIndex(threading.Thread):
 
             if self.files.keys() != prev:
                 self.save()
-            
+
             time.sleep(3)
-        
-    
+
     def load(self):
         results = load(self._data_file)
         if not results:
             return
-        
+
         for k, v in results.iteritems():
             if k == 'files' and not isinstance(v, dict):
                 continue
-            
+
             if isinstance(v, dict):
                 getattr(self, k).update(v)
             else:
@@ -131,13 +133,13 @@ class AudioIndex(threading.Thread):
             'metadata': dict(self.metadata),
             'files': self.files,
         })
-    
+
     def add_path(self, path):
         dir_list = [path]
-        
+
         while dir_list:
             path = dir_list.pop()
-            for fn in os.listdir(path): 
+            for fn in os.listdir(path):
                 if fn.startswith('.'):
                     continue
 
@@ -147,11 +149,11 @@ class AudioIndex(threading.Thread):
                     unicode(full_path)
                 except:
                     continue
-            
+
                 if os.path.isdir(full_path):
                     dir_list.append(full_path)
                     continue
-                elif full_path in self.files.values():
+                elif full_path in self.metadata:
                     continue
 
                 try:
@@ -159,7 +161,7 @@ class AudioIndex(threading.Thread):
                 except Exception, e:
                     print e
                     continue
-                
+
                 tokens = []
 
                 for key, value in metadata.iteritems():
@@ -175,7 +177,7 @@ class AudioIndex(threading.Thread):
 
                 for token in tokens:
                     self.tokenized[token][full_path] += 1
-                    
+
     def search(self, query):
         text_results = defaultdict(int)
         filter_results = defaultdict(int)
@@ -197,7 +199,7 @@ class AudioIndex(threading.Thread):
             for token in text_tokens.split(' '):
                 for full_path, count in self.tokenized[token].iteritems():
                     text_results[full_path] += count
-        
+
         if filter_results:
             # We need to remove any results which didnt match filters
             results = {}
@@ -220,6 +222,7 @@ class AudioIndex(threading.Thread):
 
         """
         tokens = defaultdict(str)
+
         def _token_repl(matchobj):
             tokens[matchobj.group(1)] = matchobj.group(2)
             return ''

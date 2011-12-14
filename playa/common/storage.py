@@ -13,6 +13,7 @@ except:
 
 import time
 
+
 def save(path, data):
     start = time.time()
 
@@ -20,8 +21,9 @@ def save(path, data):
 
     with open(path, 'wb') as fp:
         pickle.dump(data, fp)
-    
+
     print "Done! (took %.2fs)" % (time.time() - start)
+
 
 def load(path):
     start = time.time()

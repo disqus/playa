@@ -7,24 +7,26 @@ playa.models
 """
 
 from BTrees.OOBTree import OOBTree
-from playa.ext.zodb import Model, Timestamp, Boolean, \
-                           UUID4, List
+from playa.ext.zodb import Model, Timestamp, List
 
 import bcrypt
-import uuid
+
 
 class Users(OOBTree):
-    def new(self, username, password):
+    def new(self, username, password=None):
         user = User(username=username)
-        user.set_password(password)
+        if password:
+            user.set_password(password)
         self[username] = user
         return user
+
 
 class User(Model):
     username = None
     password = None
     date_created = Timestamp
-    
+    queue = List
+
     def __unicode__(self):
         return self.username
 
@@ -37,21 +39,3 @@ class User(Model):
         salt = bcrypt.gensalt()
 
         self.password = bcrypt.hashpw(password, salt)
-
-class Playlists(OOBTree):
-    def new(self, name, owner=None):
-        id = uuid.uuid4().hex
-        playlist = Playlist(id=id, name=name, owner=owner)
-        self[id] = playlist
-        return playlist
-
-class Playlist(Model):
-    id = UUID4
-    name = None
-    owner = User
-    collaborative = Boolean
-    date_created = Timestamp
-    files = List
-    
-    def __unicode__(self):
-        return self.name

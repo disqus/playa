@@ -14,10 +14,11 @@ import random
 from playa.ext.audio.index import AudioIndex
 from playa.ext.audio.stream import AudioStream
 
+
 class AudioPlayer(object):
     filter_keys = ['title', 'artist', 'genre', 'album']
     text_keys = ['title', 'artist', 'album']
-    
+
     def __init__(self, app=None):
         if app is not None:
             self.init_app(app)
@@ -41,6 +42,15 @@ class AudioPlayer(object):
         else:
             return getattr(self.stream, attr)
 
+    def has_song(self, filename):
+        if filename not in self.index.metadata:
+            return False
+
+        if not os.path.exists(filename):
+            return False
+
+        return True
+
     def get_num_songs(self):
         return len(self.index.files)
 
@@ -59,7 +69,7 @@ class AudioPlayer(object):
     def play_random(self):
         if not self.is_ready():
             return
-        
+
         name = self.index.files.values()[random.randint(0, len(self.index.files))]
 
         return self.play_filename(name)
@@ -69,10 +79,10 @@ class AudioPlayer(object):
             return
 
         return self.index.search(query) or []
-    
+
     def get_metadata(self, filename):
         return self.index.metadata[filename]
-    
+
     def play_filename(self, filename):
         if not self.is_ready():
             return

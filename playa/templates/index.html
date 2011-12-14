@@ -1,17 +1,25 @@
 {% extends "base.html" %}
 
 {% block body %}
-    <p><a href="{{ url_for('next_track') }}">Skip Track</a></p>
-    <form method="GET" action="/search" id="search">
-        <input type="text" name="q" placeholder="search music"/>
-    </form>
-    
     {% if player.queue %}
-        <h2>Upcoming <a href="{{ url_for('clear_queue') }}">Clear</a></h2>
-        <ol class="playlist" start="{{ player.get_queue_offset() + 1 }}">
-            {% for num, filename, is_playing in player.list_queue(with_playing=True, limit=100) %}
-                <li{% if is_playing %} class="active"{% endif %}>{{ filename|song_title }}</li>
-            {% endfor %}
-        </ol>
+        <h2>Upcoming
+          <small><a href="{{ url_for('clear_queue') }}">Clear</a></small>
+        </h2>
+        <table class="playlist" start="{{ player.get_queue_offset() + 1 }}">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for num, filename, is_playing in player.list_queue(with_playing=True, limit=100) %}
+                    <tr{% if is_playing %} class="playing"{% endif %}>
+                        <td>{{ num }}</td>
+                        <td>{{ filename|song_title }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     {% endif %}
 {% endblock %}

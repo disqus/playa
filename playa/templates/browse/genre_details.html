@@ -1,14 +1,16 @@
 {% extends "base.html" %}
 
+{% block title %}{{ genre }} | {% endblock %}
+
 {% block body %}
-    <h2>Genre: {{ genre }}</h2>
+    <h2>{{ genre }} <small>Genre Details</small></h2>
     <form method="POST" action="{{ url_for('play_filename') }}" id="results">
         <table>
             <thead>
                 <tr>
                     <th style="width:16px"><input type="checkbox"/></th>
                     <th>Song</th>
-                    <th style="width:100px;text-align:right"><input type="submit" value="Add to Queue"/></th>
+                    <th style="width:100px;text-align:right"><input type="submit" class="btn" value="Add to Queue"/></th>
                 </tr>
             </thead>
             <tbody>

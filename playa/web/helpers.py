@@ -9,7 +9,7 @@ playa.web.helpers
 from __future__ import division
 
 from playa import app
-from playa.web.templatetags import song_title
+
 
 def get_now_playing():
     current_song = app.player.get_current_song()
@@ -30,7 +30,8 @@ def get_now_playing():
     return {
         'playing': app.player.is_playing(),
         'filename': current_song,
-        'title': song_title(current_song),
+        'title': metadata['title'],
+        'artist': metadata.get('artist'),
         'album': metadata.get('album'),
         'position': position[0],
         'duration': position[1],

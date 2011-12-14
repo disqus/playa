@@ -1,72 +1,120 @@
-<DOCTYPE html>
-<html>
-    <head>
-        <title>
-            {% if current_song %}
-            {{ current_song.artist }} - {{ current_song.title }} |
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>
+        {% if current_song %}
+          {{ current_song.artist }} - {{ current_song.title }} |
+        {% endif %}
+        {% block title %}{% endblock %}
+        Playa
+    </title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-1.4.0.min.css') }}">
+    <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='playa.css') }}">
+
+    <script src="{{ url_for('static', filename='jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='playa.js') }}"></script>
+    <script>
+    Playa.apiUrlMap = {
+        'now_playing': '{{ url_for('now_playing') }}',
+        'set_volume': '{{ url_for('set_volume') }}',
+        'seek': '{{ url_for('seek') }}',
+        'stop_playing': '{{ url_for('stop_playing') }}',
+        'start_playing': '{{ url_for('start_playing') }}',
+        'add_to_queue': '{{ url_for('add_to_queue') }}'
+    };
+    </script>
+  </head>
+  <body>
+
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="container">
+          <a class="brand" href="/">{% block brand %}Playa{% endblock %}</a>
+          <ul class="nav">
+            <li{% block nav_home_active %}{% endblock %}><a href="{{ url_for('index') }}">Home</a></li>
+            <li{% block nav_artists_active %}{% endblock %}><a href="{{ url_for('artists') }}">Artists</a></li>
+            <li{% block nav_genres_active %}{% endblock %}><a href="{{ url_for('genres') }}">Genres</a></li>
+            <li{% block nav_search_active %}{% endblock %}><a href="{{ url_for('search') }}">Search</a></li>
+          </ul>
+          <p class="pull-right">
+            <span class="total-songs">{{ total_songs }} tracks{% if playlist_songs %} ({{ playlist_songs }} in playlist){% endif %}</span>
+            {% if user %}
+              Logged in as <a href="#">{{ user.username }}</a>
             {% endif %}
-            Playa
-        </title>
-        <link rel="stylesheet" media="screen" href="{{ url_for('static', filename='playa.css') }}"/>
-        <script>
-        var Playa = {};
-        Playa.apiUrlMap = {
-            'now_playing': '{{ url_for('now_playing') }}',
-            'set_volume': '{{ url_for('set_volume') }}',
-            'seek': '{{ url_for('seek') }}',
-            'stop_playing': '{{ url_for('stop_playing') }}',
-            'start_playing': '{{ url_for('start_playing') }}'
-        };
-        </script>
-        <script src="{{ url_for('static', filename='jquery.js') }}"></script>
-        <script src="{{ url_for('static', filename='playa.js') }}"></script>
-    </head>
-    <body>
-        <div id="container">
-            <div class="clearfix">
-                {% if not player.is_ready() %}
-                    <p>Please wait while Playa loads...</p>
-                {% else %}
-                    <p id="nav">
-                        <span class="total-songs">{{ total_songs }} tracks{% if playlist_songs %} ({{ playlist_songs }} in playlist){% endif %}</span>
-                        <a href="{{ url_for('index') }}">Home</a> | <a href="{{ url_for('artists') }}">Artists</a> | <a href="{{ url_for('genres') }}">Genres</a> | <a href="{{ url_for('search') }}">Search</a>
-                    </p>
-                    <div id="now-playing">
-                        <div class="progress-bar volume-bar">
-                            <div style="width:{{ player.get_volume() }}%"></div>
-                        </div>
-                        <div class="song-action">
-                            {% if now_playing.playing %}
-                                <a href="{{ url_for('stop_playing') }}" class="pause-button">Pause</a>
-                            {% else %}
-                                <a href="{{ url_for('start_playing') }}" class="play-button">Play</a>
-                            {% endif %}
-                        </div>
-                        {% if now_playing.title %}
-                            <div class="song-name">{{ now_playing.title }}</div>
-                            <div class="song-pos">-{{ (now_playing.duration - now_playing.position)|duration }}</div>
-                            <div class="song-album">{{ now_playing.album or '' }}</div>
-                            <div class="song-position progress-bar">
-                                <div style="width:{{ now_playing.percent_complete }}%"></div>
-                            </div>
-                        {% else %}
-                            <div class="song-name"></div>
-                            <div class="song-pos"></div>
-                            <div class="song-album"></div>
-                            <div class="song-position progress-bar">
-                                <div style="width:0"></div>
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    {% block body %}{% endblock %}
-                {% endif %}
-            </div>
+          </p>
         </div>
-        <div id="footer">
-            <div class="container">
-                Playa | Conjured up by the <a href="http://code.disqus.com">DISQUS</a> team and other noble <a href="https://github.com/disqus/playa/contributors">sorcerers</a>.
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="content">
+        <div class="row">
+          <div class="span5">
+            <div id="now-playing">
+<!--                 <div class="progress-bar volume-bar">
+                  <div style="width:{{ player.get_volume() }}%"></div>
+              </div> -->
+              <div class="song-action">
+                  {% if now_playing.playing %}
+                      <a href="{{ url_for('stop_playing') }}" class="pause-button">Pause</a>
+                  {% else %}
+                      <a href="{{ url_for('start_playing') }}" class="play-button">Play</a>
+                  {% endif %}
+              </div>
+              {% if now_playing.title %}
+                  <div class="song-name">{{ now_playing.title }}</div>
+                  {% if now_playing.artist %}
+                    <div class="song-artist">{{ now_playing.artist }}</div>
+                  {% endif %}
+                  <div class="song-pos">-{{ (now_playing.duration - now_playing.position)|duration }}</div>
+                  <div class="song-album">{{ now_playing.album or '' }}</div>
+                  <div class="song-position progress-bar">
+                      <div style="width:{{ now_playing.percent_complete }}%"></div>
+                  </div>
+              {% else %}
+                  <div class="song-name"></div>
+                  <div class="song-pos"></div>
+                  <div class="song-album"></div>
+                  <div class="song-position progress-bar">
+                      <div style="width:0"></div>
+                  </div>
+              {% endif %}
             </div>
+<!--               <p><a href="{{ url_for('next_track') }}">Skip Track</a></p>
+-->
+            <form method="GET" action="/search" id="search">
+                <input type="text" name="q"value="{{ query or '' }}" placeholder="search music">
+            </form>
+
+            {% if request.user %}
+              <h3>Your Queue</h3>
+
+              <ol>
+                {% for filename in request.user.queue %}
+                  <li>{{ filename|song_title }}</li>
+                {% endfor %}
+              </ol>
+            {% endif %}
+          </div>
+          <div class="span11">
+            {% block body %}{% endblock %}
+          </div>
         </div>
-    </body>
+        <footer>
+          <p>Playa | Conjured up by the <a href="http://code.disqus.com">DISQUS</a> team and other noble <a href="https://github.com/disqus/playa/contributors">sorcerers</a>.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
 </html>
